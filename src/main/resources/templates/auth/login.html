@@ -1,54 +1,50 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head('Iniciar sesión')}"></head>
-<body class="fondo-auth">
+<body class="pagina-auth movil-login">
 
-<main class="container py-5">
-    <div class="tarjeta-auth mx-auto">
-        <div class="cabecera-auth">
-            <a th:href="@{/}" class="text-white text-decoration-none small">
-                <i class="bi bi-arrow-left"></i> Volver al catálogo
-            </a>
-            <h1 class="mt-4 mb-1">Iniciar sesión</h1>
-            <p class="mb-0 opacity-75">Bienvenido de vuelta a tu rincón horneado hoy</p>
-        </div>
+<div class="auth-imagen">
+    <a th:href="@{/}"><i class="bi bi-arrow-left"></i> Volver a la tienda</a>
+</div>
 
-        <div class="cuerpo-auth">
-            <div th:if="${param.error}" class="alert alert-danger py-2 small">
-                Correo o contraseña incorrectos.
-            </div>
-            <div th:if="${param.salir}" class="alert alert-secondary py-2 small">
-                Cerraste sesión correctamente.
-            </div>
-            <div th:if="${mensaje}" class="alert alert-success py-2 small" th:text="${mensaje}"></div>
-
-            <form th:action="@{/login}" method="post">
-                <div class="mb-3">
-                    <label for="email" class="form-label">Correo electrónico</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-person"></i></span>
-                        <input type="email" id="email" name="email" class="form-control"
-                               placeholder="tu.correo@ejemplo.com" required autofocus>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" id="password" name="password" class="form-control" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-guinda w-100 py-2">
-                    Iniciar sesión <i class="bi bi-arrow-right"></i>
-                </button>
-            </form>
-
-            <p class="text-center small mt-4 mb-0">
-                ¿Nuevo cliente? <a th:href="@{/registro}" class="enlace-guinda">Crea tu cuenta aquí</a>
-            </p>
-        </div>
+<div class="auth-panel">
+    <div class="auth-cabecera">
+        <a th:href="@{/}" class="marca">
+            <span class="marca-icono"><i class="bi bi-basket2-fill"></i></span>
+            <span class="marca-movil">Panadería Piero Alonso</span>
+        </a>
+        <a th:href="@{/}" class="auth-cerrar" aria-label="Cerrar"><i class="bi bi-x-lg"></i></a>
     </div>
-</main>
+
+    <div class="auth-cuerpo">
+        <div th:if="${param.error}" class="aviso error">Correo o contraseña incorrectos.</div>
+        <div th:if="${param.salir}" class="aviso exito">Cerraste sesión correctamente.</div>
+        <div th:if="${mensaje}" class="aviso exito" th:text="${mensaje}"></div>
+
+        <h1 class="titulo-pagina">Iniciar Sesión</h1>
+        <p class="texto-gris">Bienvenido de vuelta a tu rincón horneado hoy</p>
+
+        <form th:action="@{/login}" method="post" class="form-auth">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <div class="campo-icono icono-izquierda">
+                <span class="icono-campo"><i class="bi bi-person"></i></span>
+                <input type="email" id="email" name="email" class="form-control"
+                       placeholder="usuario@correo.com" required autofocus autocomplete="email">
+            </div>
+
+            <label for="password" class="form-label">Contraseña</label>
+            <div class="campo-icono icono-derecha">
+                <input type="password" id="password" name="password" class="form-control"
+                       placeholder="••••••••" required autocomplete="current-password">
+                <span class="icono-campo"><i class="bi bi-unlock"></i></span>
+            </div>
+
+            <button type="submit" class="boton-guinda">INICIAR SESIÓN <i class="bi bi-arrow-right"></i></button>
+        </form>
+
+        <p class="auth-cambiar auth-pie">¿Nuevo cliente? <a th:href="@{/registro}">Crea tu cuenta aquí</a></p>
+    </div>
+</div>
 
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
 </body>

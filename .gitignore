@@ -16,3 +16,7 @@ nbproject/
 *.log
 .DS_Store
 Thumbs.db
+
+# Proyecto usado solo como referencia de diseno
+proyecto-referencia/
+Piero_Alonso_Responsive_Codigo/

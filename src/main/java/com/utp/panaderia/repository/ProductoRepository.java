@@ -21,4 +21,6 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
                                      @Param("texto") String texto);
 
     List<Producto> findAllByOrderByCategoriaNombreAscNombreAsc();
+
+    boolean existsByNombreIgnoreCase(String nombre);
 }

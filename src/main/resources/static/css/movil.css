@@ -1,0 +1,818 @@
+/*
+ * Diseño para celular (pantallas de 767px o menos), basado en el prototipo de alta fidelidad.
+ * Medidas tomadas de las capturas de referencia (317 x 790).
+ * Los colores, degradados y fuentes vienen de las variables de estilos.css (:root).
+ */
+
+/* Elementos que solo existen en la version movil */
+.solo-movil {
+    display: none;
+}
+
+@media (max-width: 767px) {
+
+    .solo-movil {
+        display: revert;
+    }
+
+    .solo-escritorio {
+        display: none !important;
+    }
+
+    body {
+        font-family: var(--fuente-texto);
+        background-color: var(--crema);
+    }
+
+    /* ================= Estructura ================= */
+
+    .menu-lateral {
+        display: none;
+    }
+
+    .principal {
+        margin-left: 0;
+        padding-bottom: 66px; /* espacio para la barra inferior */
+    }
+
+    .contenido {
+        padding: 14px 17px 24px;
+    }
+
+    .titulo-pagina {
+        font-size: 28px;
+        line-height: 1.25;
+    }
+
+    .texto-gris {
+        font-size: 12px;
+        margin: 4px 0 16px;
+    }
+
+    .antetitulo {
+        font-size: 10px;
+        margin-bottom: 6px;
+    }
+
+    /* ================= Cabecera ================= */
+
+    .barra-superior {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        column-gap: 9px;
+        row-gap: 16px;
+        align-items: center;
+        min-height: 0;
+        padding: 20px 17px 0;
+        background: none;
+        border: 0;
+    }
+
+    .saludo {
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .avatar-movil {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--verde);
+        color: var(--amarillo-icono);
+        font-size: 19px;
+    }
+
+    .barra-superior .antetitulo.suave {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .02em;
+        color: #2d2626;
+        margin: 0;
+    }
+
+    .barra-superior h2 {
+        font-family: var(--fuente-texto);
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.15;
+        color: #222;
+    }
+
+    .acciones-superior {
+        display: contents;
+    }
+
+    .buscador {
+        grid-column: 1;
+        grid-row: 2;
+        min-width: 0;
+        width: auto;
+        height: 33px;
+        border-radius: 16px;
+        border: 1px solid var(--borde-campo);
+        background-color: var(--gris-campo);
+        box-shadow: none;
+    }
+
+    .buscador button {
+        padding: 0 8px 0 12px;
+        font-size: 14px;
+        color: #8a8380;
+    }
+
+    .buscador input {
+        font-size: 12px;
+        padding-right: 12px;
+    }
+
+    .boton-cesta {
+        grid-column: 2;
+        grid-row: 1;
+        width: 36px;
+        height: 36px;
+        background-color: var(--gris-boton);
+        color: var(--vino);
+        font-size: 17px;
+    }
+
+    .boton-cesta sup {
+        top: -4px;
+        right: -3px;
+        font-size: 9px;
+        padding: 2px 5px;
+    }
+
+    .boton-filtro {
+        grid-column: 2;
+        grid-row: 2;
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 33px;
+        border-radius: 10px;
+        background-color: var(--vino);
+        color: #fff;
+        font-size: 14px;
+    }
+
+    .boton-filtro:hover {
+        color: #fff;
+    }
+
+    /* ================= Banner ================= */
+
+    .banner {
+        height: 164px;
+        padding: 0 18px;
+        border-radius: 20px;
+        background: var(--degradado-banner);
+        box-shadow: 0 7px 14px rgba(77, 43, 38, .18);
+    }
+
+    .banner-etiqueta {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: .04em;
+        color: #eddcdc;
+        background-color: rgba(255, 255, 255, .2);
+        padding: 3px 11px;
+        border-radius: 12px;
+    }
+
+    .banner h1 {
+        font-family: var(--fuente-titulos);
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.25;
+        margin: 10px 0 3px;
+    }
+
+    .banner em {
+        font-style: normal;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .banner p {
+        font-size: 10px;
+        color: #ead7d5;
+        margin: 0 0 17px;
+    }
+
+    .banner .boton-dorado {
+        padding: 8px 17px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        color: #2b3326;
+        border-radius: 18px;
+        background: var(--degradado-dorado);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
+    }
+
+    .banner .boton-dorado i {
+        margin-left: 4px;
+        font-size: 13px;
+        vertical-align: -2px;
+    }
+
+    /* ================= ¡Al día! ================= */
+
+    .encabezado-seccion {
+        align-items: center;
+        margin: 22px 0 12px;
+    }
+
+    .titulo-al-dia {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        font-family: var(--fuente-titulos);
+        font-size: 17px;
+        font-style: italic;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--texto);
+    }
+
+    .etiqueta-fresco {
+        font-family: var(--fuente-texto);
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 500;
+        text-transform: none;
+        color: #8a2f33;
+        background-color: var(--rosa);
+        border-radius: 4px;
+        padding: 2px 7px;
+    }
+
+    .encabezado-seccion a {
+        font-size: 10px;
+        font-weight: 700;
+        color: #6e2427;
+    }
+
+    /* ================= Tarjetas de producto ================= */
+
+    .grilla-productos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 13px;
+    }
+
+    /* la tarjeta se arma con grid para ordenar: etiqueta, nombre, foto y precio */
+    .tarjeta-producto {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "unidad    categoria"
+            "nombre    nombre"
+            "foto      foto"
+            "plabel    agregar"
+            "precio    agregar";
+        padding: 10px;
+        border-radius: 14px;
+        border: 1px solid var(--borde);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .05);
+    }
+
+    .foto-producto,
+    .info-producto {
+        display: contents;
+    }
+
+    .foto-producto img {
+        grid-area: foto;
+        width: 100%;
+        height: 77px;
+        margin: 7px 0 14px;
+        border-radius: 10px;
+        object-fit: cover;
+        background-color: #f6f5f4;
+    }
+
+    .etiqueta-unidad {
+        grid-area: unidad;
+        position: static;
+        justify-self: start;
+        align-self: center;
+        background-color: #efedeb;
+        color: #4a4442;
+        font-size: 9px;
+        font-weight: 600;
+        padding: 3px 6px;
+        border-radius: 5px;
+    }
+
+    .form-favorito {
+        grid-area: foto;
+        justify-self: end;
+        align-self: start;
+        margin: 12px 5px 0 0;
+        z-index: 1;
+    }
+
+    .boton-favorito {
+        position: static;
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+    }
+
+    .info-producto .categoria-producto {
+        grid-area: categoria;
+        justify-self: end;
+        align-self: center;
+        margin: 0 0 0 4px;
+        font-size: 9px;
+        color: #9b9390;
+        white-space: nowrap;
+    }
+
+    .info-producto h3 {
+        grid-area: nombre;
+        margin: 8px 0 0;
+        padding: 0;
+        font-family: var(--fuente-texto);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--texto);
+    }
+
+    .info-producto .etiqueta-precio {
+        grid-area: plabel;
+        margin: 0;
+        font-size: 8px;
+        color: var(--texto-gris);
+    }
+
+    .info-producto .precio-producto {
+        grid-area: precio;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--texto);
+    }
+
+    .form-agregar {
+        grid-area: agregar;
+        align-self: center;
+    }
+
+    .boton-agregar {
+        position: static;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        background-color: var(--vino-boton);
+        box-shadow: 0 2px 5px rgba(54, 21, 28, .25);
+    }
+
+    .boton-agregar i {
+        display: block;
+        line-height: 24px;
+    }
+
+    /* ================= Otras pantallas ================= */
+
+    .filtros {
+        margin: 16px 0;
+        gap: 6px;
+    }
+
+    .filtros a {
+        padding: 7px 13px;
+        font-size: 11px;
+    }
+
+    .vacio {
+        min-height: 280px;
+        margin-top: 16px;
+        border-radius: 20px;
+    }
+
+    .fila-carrito {
+        gap: 9px;
+    }
+
+    .fila-carrito img {
+        width: 65px;
+        height: 65px;
+    }
+
+    .fila-carrito h3 {
+        font-size: 13px;
+    }
+
+    .salir-movil {
+        margin-top: 24px;
+        text-align: center;
+    }
+
+    .salir-movil button {
+        border: 1px solid var(--borde);
+        background-color: #fff;
+        color: var(--vino);
+        border-radius: 20px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* ================= Barra inferior ================= */
+
+    .nav-inferior {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 50px;
+        padding-bottom: env(safe-area-inset-bottom);
+        background-color: #fff;
+        border-top: 1px solid #ece6e1;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, .03);
+    }
+
+    .nav-inferior a {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        min-width: 46px;
+        font-size: 9px;
+        color: #7a4d49;
+    }
+
+    .nav-inferior i {
+        font-size: 18px;
+        line-height: 1;
+    }
+
+    .nav-inferior a.activo {
+        color: #5e2526;
+        font-weight: 700;
+    }
+
+    .contador-movil {
+        position: absolute;
+        top: -4px;
+        right: 6px;
+        min-width: 15px;
+        padding: 1px 4px;
+        border-radius: 10px;
+        background-color: var(--vino);
+        color: #fff;
+        font-size: 8px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    /* ================= Iniciar sesión ================= */
+
+    body.movil-login {
+        min-height: 100vh;
+        background: var(--fondo-login);
+        color: #fff;
+    }
+
+    .movil-login .auth-imagen,
+    .movil-login .auth-cerrar,
+    .movil-login .antetitulo {
+        display: none;
+    }
+
+    .movil-login .auth-panel {
+        position: relative;
+        width: 100%;
+        min-height: 100vh;
+        padding: 0 24px;
+    }
+
+    .movil-login .auth-cabecera {
+        padding-top: 17px;
+    }
+
+    .movil-login .marca {
+        gap: 10px;
+    }
+
+    .movil-login .marca-icono {
+        width: 30px;
+        height: 30px;
+        background-color: var(--verde-marca);
+        font-size: 0;
+    }
+
+    .marca-movil {
+        font-size: 12px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .movil-login .auth-cuerpo {
+        max-width: none;
+        margin: 147px 0 0;
+        padding-bottom: 70px;
+    }
+
+    .movil-login .titulo-pagina {
+        font-family: var(--fuente-texto);
+        font-size: 22px;
+        font-weight: 700;
+        text-align: center;
+        color: #fff;
+        margin: 0 0 9px;
+    }
+
+    .movil-login .texto-gris {
+        font-size: 10px;
+        text-align: center;
+        color: #ead2ce;
+        margin: 0 0 52px;
+    }
+
+    .movil-login .form-auth .form-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 1.5;
+        color: #fff;
+        margin: 13px 0 3px;
+    }
+
+    /* el primer hijo del form es el campo oculto del token CSRF, por eso first-of-type */
+    .movil-login .form-auth > label:first-of-type {
+        margin-top: 0;
+    }
+
+    .movil-login .form-auth .form-control {
+        height: 40px;
+        border: 0;
+        border-radius: 12px;
+        font-size: 11px;
+        padding: 0 16px;
+    }
+
+    .movil-login .icono-izquierda .form-control {
+        padding-left: 50px;
+    }
+
+    .movil-login .icono-derecha .form-control {
+        padding-right: 46px;
+    }
+
+    .movil-login .icono-campo {
+        top: 7.5px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background-color: var(--rosa-icono);
+        color: #6d3533;
+        font-size: 12px;
+    }
+
+    .movil-login .icono-izquierda .icono-campo {
+        left: 13px;
+    }
+
+    .movil-login .icono-derecha .icono-campo {
+        right: 10px;
+    }
+
+    .movil-login .form-auth .boton-guinda {
+        width: calc(100% + 9px);
+        height: 40px;
+        margin: 36px 0 0 -8px;
+        padding: 0;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .08em;
+        background: var(--degradado-boton);
+        box-shadow: 0 8px 14px rgba(40, 10, 12, .45);
+    }
+
+    .movil-login .auth-pie {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 14px;
+        margin: 0;
+        font-size: 10px;
+        color: #e4d4d1;
+    }
+
+    .movil-login .auth-pie a {
+        color: #fff;
+    }
+
+    .movil-login .aviso {
+        font-size: 12px;
+        padding: 10px 14px;
+    }
+
+    /* ================= Registro ================= */
+
+    body.movil-registro {
+        min-height: 100vh;
+        background: var(--fondo-registro);
+    }
+
+    .movil-registro .auth-imagen,
+    .movil-registro .marca,
+    .movil-registro .auth-cerrar,
+    .movil-registro .antetitulo {
+        display: none;
+    }
+
+    .movil-registro .auth-panel {
+        width: 100%;
+        min-height: 100vh;
+        padding: 0 21px 30px;
+    }
+
+    .movil-registro .auth-cabecera {
+        padding-top: 23px;
+    }
+
+    .auth-volver {
+        display: grid;
+        place-items: center;
+        width: 31px;
+        height: 31px;
+        border-radius: 50%;
+        background-color: #fff;
+        color: #2b1d1b;
+        font-size: 14px;
+    }
+
+    .movil-registro .auth-cuerpo {
+        max-width: none;
+        margin: 35px 0 0;
+    }
+
+    .movil-registro .titulo-pagina {
+        font-family: var(--fuente-texto);
+        font-size: 28px;
+        font-weight: 700;
+        text-align: center;
+        color: var(--cafe-titulo);
+        margin: 0 0 19px;
+    }
+
+    .movil-registro .texto-gris {
+        font-size: 10px;
+        text-align: center;
+        color: #6e6260;
+        margin: 0 0 34px;
+    }
+
+    .movil-registro .grupo-campo {
+        margin-bottom: 12px;
+    }
+
+    .movil-registro .grupo-terminos {
+        margin-bottom: 0;
+    }
+
+    .movil-registro .form-auth .form-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .03em;
+        line-height: 1.2;
+        color: var(--cafe-etiqueta);
+        margin: 0 0 5px;
+    }
+
+    .movil-registro .fila-nombre {
+        --bs-gutter-x: 8px;
+    }
+
+    .movil-registro .fila-nombre > div {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .movil-registro .form-auth .form-control {
+        height: 35px;
+        border: 0;
+        border-radius: 11px;
+        font-size: 11px;
+        padding: 0 14px;
+    }
+
+    .movil-registro .icono-izquierda .form-control {
+        padding-left: 38px;
+    }
+
+    .movil-registro .icono-derecha .form-control {
+        padding-right: 40px;
+    }
+
+    /* el icono rojo de Bootstrap se encimaba con el ojo de la contrasena */
+    .movil-registro .icono-derecha .form-control.is-invalid {
+        background-image: none;
+    }
+
+    .movil-registro .icono-campo {
+        left: 14px;
+        height: 35px;
+        color: var(--texto-campo);
+        font-size: 14px;
+    }
+
+    .ver-clave {
+        position: absolute;
+        top: 0;
+        right: 8px;
+        height: 35px;
+        border: 0;
+        background: none;
+        color: var(--texto-campo);
+        font-size: 14px;
+    }
+
+    .movil-registro .input-group-text {
+        gap: 6px;
+        border: 0;
+        border-radius: 11px 0 0 11px;
+        background-color: var(--salvia);
+        color: #2b2b2b;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 0 11px;
+    }
+
+    .movil-registro .input-group .form-control {
+        border-radius: 0 11px 11px 0;
+    }
+
+    .movil-registro .form-check {
+        margin: 0 !important;
+        padding-left: 24px;
+    }
+
+    .movil-registro .form-check-input {
+        width: 14px;
+        height: 14px;
+        margin-top: 2px;
+        margin-left: -24px;
+        border-color: #4a2b27;
+        border-radius: 3px;
+    }
+
+    .movil-registro .form-check-input:checked {
+        background-color: #3e1f1c;
+        border-color: #3e1f1c;
+    }
+
+    .movil-registro .form-check-label {
+        font-size: 9.5px;
+        line-height: 1.35;
+        color: #5f5452;
+    }
+
+    .movil-registro .form-auth .boton-guinda {
+        height: 42px;
+        margin-top: 17px;
+        padding: 0;
+        border-radius: 11px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .1em;
+        background: var(--degradado-boton-registro);
+        box-shadow: 0 8px 14px rgba(70, 40, 35, .4);
+    }
+
+    .movil-registro .form-auth .boton-guinda i {
+        margin-left: 2px;
+    }
+
+    .movil-registro .auth-cambiar {
+        font-size: 10px;
+        color: #6f6462;
+        margin-top: 16px;
+    }
+
+    .movil-registro .auth-cambiar a {
+        color: #3b1f1c;
+        font-weight: 700;
+    }
+
+    .movil-registro .invalid-feedback {
+        font-size: 10px;
+    }
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Favoritos')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('favoritos')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <span class="antetitulo">GUARDADOS PARA TI</span>
+        <h1 class="titulo-pagina">Mis favoritos</h1>
+        <p class="texto-gris">Tus antojos de siempre, reunidos en un solo lugar.</p>
+
+        <div th:replace="~{fragments/layout :: tarjetas(${productos})}"></div>
+
+        <div th:if="${#lists.isEmpty(productos)}" class="vacio">
+            <span class="vacio-icono"><i class="bi bi-heart"></i></span>
+            <h2>Sin favoritos todavía</h2>
+            <p>Guarda lo que te gusta tocando el corazón.</p>
+            <a th:href="@{/explorar}" class="boton-guinda">Explorar productos</a>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

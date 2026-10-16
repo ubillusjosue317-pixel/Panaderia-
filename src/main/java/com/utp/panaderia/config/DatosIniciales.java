@@ -1,7 +1,9 @@
 package com.utp.panaderia.config;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,8 @@ public class DatosIniciales implements CommandLineRunner {
         crearCategorias();
         crearAdministrador();
         crearProductosDeEjemplo();
+        agregarProductosNuevos();
+        asignarImagenesFaltantes();
     }
 
     private void crearRoles() {
@@ -118,6 +122,40 @@ public class DatosIniciales implements CommandLineRunner {
                 producto("Pastelería", "Torta de chocolate", "Porción con fudge", "4.50"),
                 producto("Bollería", "Croissant", "Croissant de mantequilla", "2.50"),
                 producto("Salados", "Empanada de carne", "Empanada horneada con relleno de carne", "3.50")));
+    }
+
+    // Productos que se agregaron despues. Solo se crean si no existen,
+    // asi no se toca lo que ya esta registrado en la BD.
+    private void agregarProductosNuevos() {
+        if (!productoRepository.existsByNombreIgnoreCase("Baguette clásica")
+                && categoriaRepository.findByNombre("Panadería").isPresent()) {
+            productoRepository.save(producto("Panadería", "Baguette clásica", "Corteza crocante, ideal para el desayuno", "2.80"));
+        }
+        if (!productoRepository.existsByNombreIgnoreCase("Roll de canela")
+                && categoriaRepository.findByNombre("Bollería").isPresent()) {
+            productoRepository.save(producto("Bollería", "Roll de canela", "Masa suave con canela y glaseado", "3.20"));
+        }
+    }
+
+    // Pone una foto de referencia solo a los productos que no tienen imagen
+    private void asignarImagenesFaltantes() {
+        Map<String, String> fotos = new HashMap<>();
+        fotos.put("pan camote", "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=900&q=85");
+        fotos.put("pan francés", "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=900&q=85");
+        fotos.put("baguette clásica", "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=900&q=85");
+        fotos.put("torta moka", "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&q=85");
+        fotos.put("torta de chocolate", "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&q=85");
+        fotos.put("croissant", "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=900&q=85");
+        fotos.put("empanada de carne", "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=900&q=85");
+        fotos.put("roll de canela", "https://images.unsplash.com/photo-1509365465985-25d11c17e812?w=900&q=85");
+
+        for (Producto p : productoRepository.findAll()) {
+            String foto = fotos.get(p.getNombre().toLowerCase());
+            if (foto != null && (p.getImagenUrl() == null || p.getImagenUrl().isBlank())) {
+                p.setImagenUrl(foto);
+                productoRepository.save(p);
+            }
+        }
     }
 
     private Producto producto(String categoria, String nombre, String descripcion, String precio) {

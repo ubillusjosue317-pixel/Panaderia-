@@ -1,5 +1,7 @@
 package com.utp.panaderia.service.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,17 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public List<Producto> listarTodos() {
         return productoRepository.findAllByOrderByCategoriaNombreAscNombreAsc();
+    }
+
+    @Override
+    public List<Producto> listarFavoritos(Collection<Integer> ids) {
+        List<Producto> lista = new ArrayList<>();
+        for (Producto p : productoRepository.findAllById(ids)) {
+            if (p.isDisponible()) {
+                lista.add(p);
+            }
+        }
+        return lista;
     }
 
     @Override

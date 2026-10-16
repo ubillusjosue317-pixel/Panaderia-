@@ -46,7 +46,9 @@ src/main/java/com/utp/panaderia
 ├── model/         entidades (7 tablas)
 ├── repository/    repositorios JPA
 ├── security/      login con Spring Security
-└── service/       interfaces + impl/
+├── session/       carrito y favoritos (por sesion)
+├── service/       interfaces + impl/
+└── util/          clases de apoyo
 ```
 
 ## Cómo ejecutar
@@ -89,9 +91,11 @@ mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
 - [x] Modelo de base de datos
 - [x] Registro e inicio de sesión
 - [x] Roles (cliente / administrador)
-- [x] Catálogo con búsqueda y filtro por categoría
+- [x] Inicio, Explorar (búsqueda y filtro por categoría)
+- [x] Favoritos y carrito de compras
+- [x] Confirmar pedido (recojo en tienda o delivery)
+- [x] Historial de pedidos del cliente
 - [x] Mantenimiento de productos (admin)
-- [ ] Carrito y registro de pedidos
-- [ ] Estados de pedido e historial
+- [ ] Cambio de estado de pedidos (admin)
 - [ ] Promociones
 - [ ] Reportes

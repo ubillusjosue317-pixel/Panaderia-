@@ -8,65 +8,160 @@
     <title th:text="${titulo} + ' | Panadería Piero Alonso'">Panadería Piero Alonso</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link th:href="@{/css/estilos.css}" rel="stylesheet">
+    <!-- diseño para celular (solo aplica en pantallas de 767px o menos) -->
+    <link th:href="@{/css/movil.css}" rel="stylesheet">
 </head>
 
 <body>
 
-<nav th:fragment="navbar" class="navbar navbar-expand-md navbar-dark barra-principal sticky-top">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
-            <span class="logo-circulo"><i class="bi bi-basket2-fill"></i></span>
-            Panadería Piero Alonso
+<!-- Menu lateral (escritorio) y barra inferior (celular). "activa" indica que opcion se pinta -->
+<th:block th:fragment="menu(activa)">
+<aside class="menu-lateral">
+    <a class="marca" th:href="@{/}">
+        <span class="marca-icono"><i class="bi bi-basket2-fill"></i></span>
+        <span><small>PANADERÍA</small><b>Piero Alonso</b></span>
+    </a>
+
+    <nav class="menu-opciones">
+        <a th:href="@{/}" th:classappend="${activa == 'inicio'} ? 'activo'">
+            <i class="bi bi-house-door"></i> Inicio
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
-                aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <a th:href="@{/explorar}" th:classappend="${activa == 'explorar'} ? 'activo'">
+            <i class="bi bi-compass"></i> Explorar
+        </a>
+        <a th:href="@{/pedidos}" th:classappend="${activa == 'pedidos'} ? 'activo'">
+            <i class="bi bi-bag"></i> Pedidos
+            <span class="contador" th:if="${carrito.cantidadTotal > 0}" th:text="${carrito.cantidadTotal}">0</span>
+        </a>
+        <a th:href="@{/favoritos}" th:classappend="${activa == 'favoritos'} ? 'activo'">
+            <i class="bi bi-heart"></i> Favoritos
+        </a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/mis-pedidos}"
+           th:classappend="${activa == 'historial'} ? 'activo'">
+            <i class="bi bi-receipt"></i> Mis pedidos
+        </a>
+        <a sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/admin/productos}"
+           th:classappend="${activa == 'admin'} ? 'activo'">
+            <i class="bi bi-gear"></i> Administración
+        </a>
+    </nav>
 
-        <div class="collapse navbar-collapse" id="menu">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" th:href="@{/}">Catálogo</a></li>
-                <li class="nav-item" sec:authorize="hasRole('ADMINISTRADOR')">
-                    <a class="nav-link" th:href="@{/admin/productos}">Productos</a>
-                </li>
-            </ul>
+    <div class="menu-abajo">
+        <div class="promo-lateral">
+            <strong>Tu pan, directo<br>a casa.</strong>
+            <p>Haz tu pedido y recíbelo recién horneado.</p>
+            <a th:href="@{/pedidos}" class="boton-dorado">Ver mi pedido</a>
+        </div>
 
-            <div class="d-flex align-items-center gap-2" sec:authorize="isAnonymous()">
-                <a class="btn btn-sm btn-outline-light" th:href="@{/login}">Iniciar sesión</a>
-                <a class="btn btn-sm btn-crema" th:href="@{/registro}">Crear cuenta</a>
-            </div>
-
-            <div class="d-flex align-items-center gap-3" sec:authorize="isAuthenticated()">
-                <span class="text-white-50 small">
-                    Hola, <strong class="text-white" sec:authentication="principal.nombre">Usuario</strong>
-                </span>
-                <form th:action="@{/logout}" method="post" class="m-0">
-                    <button type="submit" class="btn btn-sm btn-outline-light">
-                        <i class="bi bi-box-arrow-right"></i> Salir
-                    </button>
+        <div class="cuenta">
+            <span class="cuenta-icono"><i class="bi bi-person"></i></span>
+            <div>
+                <strong>Mi cuenta</strong>
+                <a sec:authorize="isAnonymous()" th:href="@{/login}">Iniciar sesión</a>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="boton-texto">Cerrar sesión</button>
                 </form>
             </div>
         </div>
     </div>
+</aside>
+
+<nav class="nav-inferior solo-movil" aria-label="Navegación">
+    <a th:href="@{/}" th:classappend="${activa == 'inicio'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'inicio'} ? 'bi-house-door-fill' : 'bi-house-door'"></i>Inicio
+    </a>
+    <a th:href="@{/explorar}" th:classappend="${activa == 'explorar'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'explorar'} ? 'bi-star-fill' : 'bi-star'"></i>Especial
+    </a>
+    <a th:href="@{/pedidos}" th:classappend="${activa == 'pedidos'} ? 'activo'">
+        <i class="bi bi-receipt-cutoff"></i>Pedidos
+        <span class="contador-movil" th:if="${carrito.cantidadTotal > 0}" th:text="${carrito.cantidadTotal}">0</span>
+    </a>
+    <a th:href="@{/favoritos}" th:classappend="${activa == 'favoritos'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'favoritos'} ? 'bi-heart-fill' : 'bi-heart'"></i>Deseos
+    </a>
+    <a sec:authorize="isAnonymous()" th:href="@{/login}">
+        <i class="bi bi-person"></i>Cuenta
+    </a>
+    <a sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/admin/productos}"
+       th:classappend="${activa == 'admin'} ? 'activo'">
+        <i class="bi bi-person-gear"></i>Cuenta
+    </a>
+    <a sec:authorize="isAuthenticated() and !hasRole('ADMINISTRADOR')" th:href="@{/mis-pedidos}"
+       th:classappend="${activa == 'historial'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'historial'} ? 'bi-person-fill' : 'bi-person'"></i>Cuenta
+    </a>
 </nav>
+</th:block>
+
+<header th:fragment="barra" class="barra-superior">
+    <div class="saludo">
+        <span class="avatar-movil"><i class="bi bi-person-fill"></i></span>
+        <div>
+            <span class="antetitulo suave">¡BIENVENIDO!</span>
+            <h2 sec:authorize="isAuthenticated()" sec:authentication="principal.nombre">Usuario</h2>
+            <h2 sec:authorize="isAnonymous()">Invitado</h2>
+        </div>
+    </div>
+    <div class="acciones-superior">
+        <form th:action="@{/explorar}" method="get" class="buscador">
+            <button type="submit" aria-label="Buscar"><i class="bi bi-search"></i></button>
+            <input type="search" name="q" placeholder="Buscar panes, pasteles..." th:value="${busqueda}">
+        </form>
+        <a class="boton-cesta" th:href="@{/pedidos}" aria-label="Mi pedido">
+            <i class="bi bi-cart3"></i>
+            <sup th:if="${carrito.cantidadTotal > 0}" th:text="${carrito.cantidadTotal}">0</sup>
+        </a>
+        <a class="boton-filtro" th:href="@{/explorar}" aria-label="Filtrar por categoría">
+            <i class="bi bi-funnel"></i>
+        </a>
+    </div>
+</header>
 
 <div th:fragment="alertas">
-    <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${mensaje}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-    </div>
+    <div th:if="${mensaje}" class="aviso exito" th:text="${mensaje}"></div>
+    <div th:if="${error}" class="aviso error" th:text="${error}"></div>
 </div>
 
-<footer th:fragment="footer" class="pie-pagina mt-5">
-    <div class="container py-4 d-flex flex-column flex-md-row justify-content-between gap-2 small">
-        <span>&copy; 2026 Panadería Piero Alonso</span>
-        <span>Horneado todos los días en Los Olivos</span>
-    </div>
-</footer>
+<!-- Boton para salir en celular (en escritorio se usa el menu lateral) -->
+<form th:fragment="salirMovil" sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post"
+      class="salir-movil solo-movil">
+    <button type="submit"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+</form>
+
+<!-- Grilla de productos con favorito y boton para agregar al pedido -->
+<div th:fragment="tarjetas(productos)" class="grilla-productos">
+    <article class="tarjeta-producto" th:each="p : ${productos}">
+        <div class="foto-producto">
+            <img th:src="${p.imagenUrl != null} ? ${p.imagenUrl} : @{/img/producto-default.svg}"
+                 th:alt="${p.nombre}" loading="lazy">
+            <span class="etiqueta-unidad" th:if="${p.categoria.nombre == 'Pastelería'}">PORCIÓN</span>
+            <span class="etiqueta-unidad" th:unless="${p.categoria.nombre == 'Pastelería'}">1 UNIDAD</span>
+            <form th:action="@{/favoritos/{id}(id=${p.id})}" method="post" class="form-favorito">
+                <button type="submit" class="boton-favorito"
+                        th:classappend="${carrito.esFavorito(p.id)} ? 'marcado'"
+                        th:title="${carrito.esFavorito(p.id)} ? 'Quitar de favoritos' : 'Agregar a favoritos'">
+                    <i class="bi" th:classappend="${carrito.esFavorito(p.id)} ? 'bi-heart-fill' : 'bi-heart'"></i>
+                </button>
+            </form>
+        </div>
+        <div class="info-producto">
+            <small class="categoria-producto" th:text="${p.categoria.nombre}">Panadería</small>
+            <form th:action="@{/carrito/agregar/{id}(id=${p.id})}" method="post" class="form-agregar">
+                <button type="submit" class="boton-agregar" title="Agregar al pedido">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </form>
+            <h3 th:text="${p.nombre}">Pan camote</h3>
+            <small class="etiqueta-precio">Precio</small>
+            <strong class="precio-producto">S/. <th:block th:text="${#numbers.formatDecimal(p.precio, 1, 2)}">1.00</th:block></strong>
+        </div>
+    </article>
+</div>
 
 <th:block th:fragment="scripts">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

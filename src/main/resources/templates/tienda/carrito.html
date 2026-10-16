@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Mi pedido')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('pedidos')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <span class="antetitulo">TU SELECCIÓN</span>
+        <h1 class="titulo-pagina">Mi pedido</h1>
+        <p class="texto-gris" th:text="${#lists.isEmpty(items)} ? 'Aún no has añadido productos.' : 'Revisa tus productos y confirma tu pedido.'"></p>
+
+        <div th:if="${#lists.isEmpty(items)}" class="vacio">
+            <span class="vacio-icono"><i class="bi bi-bag"></i></span>
+            <h2>Tu cesta está vacía</h2>
+            <p>Añade algo recién horneado para comenzar.</p>
+            <a th:href="@{/explorar}" class="boton-guinda">Explorar productos</a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(items)}" class="carrito">
+            <div class="caja-blanca">
+                <div class="fila-carrito" th:each="item : ${items}">
+                    <img th:src="${item.producto.imagenUrl != null} ? ${item.producto.imagenUrl} : @{/img/producto-default.svg}"
+                         th:alt="${item.producto.nombre}">
+                    <div class="detalle">
+                        <h3 th:text="${item.producto.nombre}">Pan camote</h3>
+                        <small th:text="${item.producto.categoria.nombre} + ' · S/ ' + ${#numbers.formatDecimal(item.producto.precio, 1, 2)} + ' c/u'">Panadería</small>
+                        <strong class="d-block mt-1" th:text="'S/ ' + ${#numbers.formatDecimal(item.subtotal, 1, 2)}">S/ 5.00</strong>
+                    </div>
+                    <div class="cantidad">
+                        <form th:action="@{/carrito/quitar/{id}(id=${item.producto.id})}" method="post">
+                            <button type="submit" aria-label="Quitar uno"><i class="bi bi-dash"></i></button>
+                        </form>
+                        <span th:text="${item.cantidad}">1</span>
+                        <form th:action="@{/carrito/agregar/{id}(id=${item.producto.id})}" method="post">
+                            <button type="submit" aria-label="Agregar uno"><i class="bi bi-plus"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="caja-blanca resumen">
+                <h2>Resumen</h2>
+                <div class="total">
+                    <span>Total</span>
+                    <strong th:text="'S/ ' + ${#numbers.formatDecimal(total, 1, 2)}">S/ 0.00</strong>
+                </div>
+
+                <form sec:authorize="isAuthenticated()" th:action="@{/pedidos/confirmar}" method="post">
+                    <label for="tipoEntrega">Modalidad de entrega</label>
+                    <select id="tipoEntrega" name="tipoEntrega">
+                        <option value="RECOJO_TIENDA">Recojo en tienda</option>
+                        <option value="DELIVERY">Delivery</option>
+                    </select>
+
+                    <div id="cajaDireccion" hidden>
+                        <label for="direccion">Dirección de entrega</label>
+                        <input id="direccion" name="direccion" maxlength="200" placeholder="Calle, número, referencia">
+                    </div>
+
+                    <button type="submit" class="boton-guinda">Confirmar pedido <i class="bi bi-arrow-right"></i></button>
+                </form>
+
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/pedidos/confirmar}" class="boton-guinda w-100 mt-3">Inicia sesión para confirmar</a>
+                    <small>¿No tienes cuenta? <a th:href="@{/registro}" class="enlace-guinda">Regístrate aquí</a></small>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    // la direccion solo se pide si es delivery
+    const tipoEntrega = document.getElementById("tipoEntrega");
+    if (tipoEntrega) {
+        tipoEntrega.addEventListener("change", function () {
+            document.getElementById("cajaDireccion").hidden = this.value !== "DELIVERY";
+        });
+    }
+</script>
+</body>
+</html>

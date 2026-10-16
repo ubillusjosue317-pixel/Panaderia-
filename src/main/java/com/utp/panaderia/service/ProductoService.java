@@ -1,5 +1,6 @@
 package com.utp.panaderia.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.utp.panaderia.dto.ProductoForm;
@@ -10,6 +11,8 @@ public interface ProductoService {
     List<Producto> listarDisponibles(Integer idCategoria, String texto);
 
     List<Producto> listarTodos();
+
+    List<Producto> listarFavoritos(Collection<Integer> ids);
 
     Producto buscarPorId(Integer id);
 

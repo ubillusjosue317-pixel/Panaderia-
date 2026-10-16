@@ -27,7 +27,7 @@ class NavegacionTest {
     private MockMvc mvc;
 
     @Test
-    void elCatalogoEsPublicoYMuestraLosProductos() throws Exception {
+    void elInicioEsPublicoYMuestraLosProductos() throws Exception {
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Pan camote")));
@@ -35,7 +35,7 @@ class NavegacionTest {
 
     @Test
     void elCatalogoFiltraPorTexto() throws Exception {
-        mvc.perform(get("/").param("q", "croiss"))
+        mvc.perform(get("/explorar").param("q", "croiss"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Croissant")))
                 .andExpect(content().string(not(containsString("Pan camote"))));

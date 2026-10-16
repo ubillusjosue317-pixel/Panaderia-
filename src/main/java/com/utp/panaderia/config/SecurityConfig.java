@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 import com.utp.panaderia.model.Rol;
 
@@ -19,7 +20,9 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/catalogo", "/login", "/registro", "/error").permitAll()
+                .requestMatchers("/", "/explorar", "/catalogo", "/login", "/registro", "/error").permitAll()
+                // carrito y favoritos se pueden usar sin cuenta, solo confirmar el pedido pide login
+                .requestMatchers("/pedidos", "/carrito/**", "/favoritos", "/favoritos/**").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers("/admin/**").hasRole(Rol.ADMINISTRADOR)
                 .anyRequest().authenticated())
@@ -43,13 +46,20 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // El administrador entra directo al panel; el cliente al catalogo
+    // El administrador entra directo al panel.
+    // El cliente vuelve a la pagina que estaba intentando abrir (ej. confirmar pedido) o al inicio.
     private AuthenticationSuccessHandler redirigirSegunRol() {
+        SavedRequestAwareAuthenticationSuccessHandler cliente = new SavedRequestAwareAuthenticationSuccessHandler();
+        cliente.setDefaultTargetUrl("/");
+
         return (request, response, authentication) -> {
             boolean esAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_" + Rol.ADMINISTRADOR));
-            String destino = esAdmin ? "/admin/productos" : "/";
-            response.sendRedirect(request.getContextPath() + destino);
+            if (esAdmin) {
+                response.sendRedirect(request.getContextPath() + "/admin/productos");
+            } else {
+                cliente.onAuthenticationSuccess(request, response, authentication);
+            }
         };
     }
 }

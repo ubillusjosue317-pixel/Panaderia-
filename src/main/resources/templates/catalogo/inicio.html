@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Inicio')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('inicio')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <section class="banner">
+            <div class="banner-texto">
+                <span class="banner-etiqueta">HORNEADO HOY</span>
+                <h1>Calentitos directos<br><em>a tu mesa</em></h1>
+                <p class="solo-escritorio">Disfruta de nuestros panes tradicionales, elaborados esta mañana con ingredientes seleccionados.</p>
+                <p class="solo-movil">Disfruta de nuestros panes tradicionales</p>
+                <a th:href="@{/explorar}" class="boton-dorado">PEDIR AHORA <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </section>
+
+        <div class="encabezado-seccion">
+            <h2 class="titulo-al-dia">¡Al día! <span class="etiqueta-fresco">Fresco</span></h2>
+            <a th:href="@{/explorar}">Ver todo</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: tarjetas(${productos})}"></div>
+
+        <p th:if="${#lists.isEmpty(productos)}" class="texto-gris">Todavía no hay productos disponibles.</p>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

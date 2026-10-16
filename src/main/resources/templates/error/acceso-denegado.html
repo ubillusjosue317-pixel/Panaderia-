@@ -2,14 +2,18 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head('Acceso denegado')}"></head>
 <body>
-<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<aside th:replace="~{fragments/layout :: menu('')}"></aside>
 
-<main class="container py-5 text-center">
-    <i class="bi bi-shield-lock fs-1 text-guinda"></i>
-    <h1 class="h3 mt-3">No tienes permiso para ver esta página</h1>
-    <p class="text-muted">Esta sección es solo para el personal de la panadería.</p>
-    <a th:href="@{/}" class="btn btn-guinda mt-2">Ir al catálogo</a>
-</main>
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido text-center py-5">
+        <i class="bi bi-shield-lock fs-1 text-guinda"></i>
+        <h1 class="h3 mt-3">No tienes permiso para ver esta página</h1>
+        <p class="text-muted">Esta sección es solo para el personal de la panadería.</p>
+        <a th:href="@{/}" class="btn btn-guinda mt-2">Ir al catálogo</a>
+    </main>
+</div>
 
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
 </body>
