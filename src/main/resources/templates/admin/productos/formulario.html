@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head(${producto.esNuevo()} ? 'Nuevo producto' : 'Editar producto')}"></head>
+<head th:replace="~{fragments/layout :: head(${producto.id == null} ? 'Nuevo producto' : 'Editar producto')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
@@ -8,7 +8,7 @@
     <a th:href="@{/admin/productos}" class="text-decoration-none small enlace-guinda">
         <i class="bi bi-arrow-left"></i> Volver a productos
     </a>
-    <h1 class="h3 mt-2 mb-4" th:text="${producto.esNuevo()} ? 'Nuevo producto' : 'Editar producto'">Producto</h1>
+    <h1 class="h3 mt-2 mb-4" th:text="${producto.id == null} ? 'Nuevo producto' : 'Editar producto'">Producto</h1>
 
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
