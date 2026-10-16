@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Catálogo')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-4">
+
+    <section class="banner-promo mb-4">
+        <div>
+            <span class="etiqueta-banner">Horneado hoy</span>
+            <h1 class="titulo-banner">Calentitos directos<br>a tu mesa</h1>
+            <p class="mb-0">Disfruta de nuestros panes tradicionales, recién salidos del horno.</p>
+        </div>
+    </section>
+
+    <form th:action="@{/}" method="get" class="buscador mb-3">
+        <input type="hidden" name="categoria" th:value="${categoriaActual}">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="search" name="q" class="form-control" placeholder="Buscar pan, torta, empanada..."
+                   th:value="${busqueda}">
+            <button class="btn btn-guinda" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    <div class="filtros-categoria mb-4">
+        <a th:href="@{/(q=${busqueda})}"
+           th:classappend="${categoriaActual == null} ? 'activa'"
+           class="chip-categoria">Todo</a>
+        <a th:each="cat : ${categorias}"
+           th:href="@{/(categoria=${cat.id}, q=${busqueda})}"
+           th:text="${cat.nombre}"
+           th:classappend="${categoriaActual == cat.id} ? 'activa'"
+           class="chip-categoria">Categoría</a>
+    </div>
+
+    <div class="d-flex align-items-baseline justify-content-between mb-3">
+        <h2 class="titulo-seccion">¡Al día!</h2>
+        <span class="text-muted small" th:text="${#lists.size(productos)} + ' productos'">0 productos</span>
+    </div>
+
+    <div th:if="${#lists.isEmpty(productos)}" class="text-center text-muted py-5">
+        <i class="bi bi-emoji-frown fs-1 d-block mb-2"></i>
+        No encontramos productos con ese filtro.
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-md-4 col-lg-3" th:each="producto : ${productos}">
+            <article class="tarjeta-producto h-100">
+                <div class="d-flex justify-content-between small mb-2">
+                    <span class="badge-categoria" th:text="${producto.categoria.nombre}">Panadería</span>
+                </div>
+                <h3 class="nombre-producto" th:text="${producto.nombre}">Pan camote</h3>
+                <div class="imagen-producto">
+                    <img th:src="${producto.imagenUrl != null} ? ${producto.imagenUrl} : @{/img/producto-default.svg}"
+                         th:alt="${producto.nombre}">
+                </div>
+                <p class="descripcion-producto" th:text="${producto.descripcion}">Descripción</p>
+                <div class="d-flex justify-content-between align-items-end mt-auto">
+                    <div>
+                        <span class="text-muted d-block etiqueta-precio">Precio</span>
+                        <strong class="precio" th:text="'S/ ' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">S/ 1.00</strong>
+                    </div>
+                    <!-- El carrito se implementa en el modulo de pedidos -->
+                    <button type="button" class="btn-agregar" disabled title="Disponible pronto">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+            </article>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
