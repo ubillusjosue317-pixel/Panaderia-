@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Registro')}"></head>
+<body class="fondo-auth">
+
+<main class="container py-5">
+    <div class="tarjeta-auth mx-auto">
+        <div class="cabecera-auth">
+            <a th:href="@{/login}" class="text-white text-decoration-none small">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <h1 class="mt-4 mb-1">Registro</h1>
+            <p class="mb-0 opacity-75">Únete a la familia y disfruta del pan caliente en tu mesa</p>
+        </div>
+
+        <div class="cuerpo-auth">
+            <form th:action="@{/registro}" th:object="${registro}" method="post" novalidate>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label for="nombre" class="form-label">Nombres</label>
+                        <input type="text" id="nombre" th:field="*{nombre}" class="form-control"
+                               th:errorclass="is-invalid" placeholder="Ej. Mateo">
+                        <div class="invalid-feedback" th:errors="*{nombre}"></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="apellido" class="form-label">Apellidos</label>
+                        <input type="text" id="apellido" th:field="*{apellido}" class="form-control"
+                               th:errorclass="is-invalid" placeholder="Ej. Gómez">
+                        <div class="invalid-feedback" th:errors="*{apellido}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="email" class="form-label">Correo electrónico</label>
+                        <input type="email" id="email" th:field="*{email}" class="form-control"
+                               th:errorclass="is-invalid" placeholder="tu.correo@ejemplo.com">
+                        <div class="invalid-feedback" th:errors="*{email}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="telefono" class="form-label">Número de celular <span class="text-muted">(opcional)</span></label>
+                        <div class="input-group has-validation">
+                            <span class="input-group-text">+51</span>
+                            <input type="tel" id="telefono" th:field="*{telefono}" class="form-control"
+                                   th:errorclass="is-invalid" placeholder="987654321" maxlength="9">
+                            <div class="invalid-feedback" th:errors="*{telefono}"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" id="password" th:field="*{password}" class="form-control"
+                               th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{password}"></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="confirmarPassword" class="form-label">Confirmar contraseña</label>
+                        <input type="password" id="confirmarPassword" th:field="*{confirmarPassword}"
+                               class="form-control" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{confirmarPassword}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input type="checkbox" id="aceptaTerminos" th:field="*{aceptaTerminos}"
+                                   class="form-check-input" th:errorclass="is-invalid">
+                            <label for="aceptaTerminos" class="form-check-label small">
+                                Acepto los Términos del Servicio y la Política de Privacidad
+                            </label>
+                            <div class="invalid-feedback" th:errors="*{aceptaTerminos}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-guinda w-100 py-2 mt-4">
+                    Registrarte <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
+
+            <p class="text-center small mt-4 mb-0">
+                ¿Ya tienes una cuenta? <a th:href="@{/login}" class="enlace-guinda">Inicia sesión</a>
+            </p>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

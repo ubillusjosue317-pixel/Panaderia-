@@ -1,0 +1,18 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Configuracion y base de datos H2 de cada maquina
+src/main/resources/application-local.properties
+data/
+
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/
+
+*.log
+.DS_Store
+Thumbs.db
