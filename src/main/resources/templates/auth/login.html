@@ -19,6 +19,7 @@
     <div class="auth-cuerpo">
         <div th:if="${param.error}" class="aviso error">Correo o contraseña incorrectos.</div>
         <div th:if="${param.salir}" class="aviso exito">Cerraste sesión correctamente.</div>
+        <div th:if="${param.bloqueado}" class="aviso error">Demasiados códigos incorrectos. Vuelve a iniciar sesión.</div>
         <div th:if="${mensaje}" class="aviso exito" th:text="${mensaje}"></div>
 
         <h1 class="titulo-pagina">Iniciar Sesión</h1>

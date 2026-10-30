@@ -53,4 +53,18 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         return usuarioRepository.save(usuario);
     }
+
+    @Override
+    public Usuario buscarPorId(Integer id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("No existe el usuario " + id));
+    }
+
+    @Override
+    @Transactional
+    public void activarDosPasos(Integer idUsuario, String secreto) {
+        Usuario usuario = buscarPorId(idUsuario);
+        usuario.setTotpSecreto(secreto);
+        usuarioRepository.save(usuario);
+    }
 }

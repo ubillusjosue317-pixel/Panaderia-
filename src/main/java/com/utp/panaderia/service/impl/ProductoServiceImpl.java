@@ -1,5 +1,6 @@
 package com.utp.panaderia.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -82,6 +83,22 @@ public class ProductoServiceImpl implements ProductoService {
     public Producto cambiarDisponibilidad(Integer id) {
         Producto producto = buscarPorId(id);
         producto.setDisponible(!producto.isDisponible());
+        return productoRepository.save(producto);
+    }
+
+    // Cambio rapido desde la tabla de productos.
+    // Los pedidos anteriores no cambian porque guardan el precio con el que se compro.
+    @Override
+    @Transactional
+    public Producto actualizarPrecio(Integer id, BigDecimal precio) {
+        if (precio == null || precio.signum() < 0) {
+            throw new IllegalArgumentException("El precio no puede estar vacío ni ser negativo.");
+        }
+        if (precio.scale() > 2 || precio.compareTo(new BigDecimal("999999.99")) > 0) {
+            throw new IllegalArgumentException("Formato de precio no válido.");
+        }
+        Producto producto = buscarPorId(id);
+        producto.setPrecio(precio);
         return productoRepository.save(producto);
     }
 

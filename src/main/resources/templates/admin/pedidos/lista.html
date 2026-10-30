@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Pedidos')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('admin-pedidos')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido">
+        <div class="mb-4">
+            <h1 class="h3 mb-0">Pedidos</h1>
+            <p class="text-muted mb-0 small">Pedidos de los clientes. Cambia el estado a medida que avanzan.</p>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <!-- filtro por estado con la cantidad de pedidos de cada uno -->
+        <div class="filtros-admin">
+            <a th:href="@{/admin/pedidos}" th:classappend="${estadoActual == null} ? 'activo'">Todos</a>
+            <a th:each="e : ${estados}" th:href="@{/admin/pedidos(estado=${e.id})}"
+               th:classappend="${estadoActual == e.id} ? 'activo'">
+                <th:block th:text="${e.nombre}">Pendiente</th:block>
+                <span th:text="${cantidades[e.id]}">0</span>
+            </a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(pedidos)}" class="vacio">
+            <span class="vacio-icono"><i class="bi bi-receipt"></i></span>
+            <h2>No hay pedidos</h2>
+            <p>Cuando los clientes confirmen pedidos aparecerán aquí.</p>
+        </div>
+
+        <article class="caja-blanca tarjeta-pedido" th:each="pedido : ${pedidos}">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="me-auto">
+                    <h2 th:text="'Pedido #' + ${pedido.id}">Pedido #1</h2>
+                    <small class="text-muted"
+                           th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')} + ' · ' + (${pedido.tipoEntrega.name() == 'DELIVERY'} ? 'Delivery' : 'Recojo en tienda')">
+                        16/10/2026 10:30 · Recojo en tienda
+                    </small>
+                </div>
+                <strong th:text="'S/ ' + ${#numbers.formatDecimal(pedido.total, 1, 2)}">S/ 0.00</strong>
+                <form th:action="@{/admin/pedidos/{id}/estado(id=${pedido.id})}" method="post" class="form-estado">
+                    <input type="hidden" name="filtro" th:if="${estadoActual != null}" th:value="${estadoActual}">
+                    <select name="idEstado" class="form-select form-select-sm" th:aria-label="'Estado del pedido ' + ${pedido.id}">
+                        <option th:each="e : ${estados}" th:value="${e.id}" th:text="${e.nombre}"
+                                th:selected="${e.id == pedido.estado.id}">Pendiente</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-guinda">Cambiar</button>
+                </form>
+            </div>
+
+            <p class="small mt-2 mb-1">
+                <i class="bi bi-person"></i>
+                <span th:text="${pedido.usuario.nombreCompleto}">Cliente</span>
+                · <a th:href="'mailto:' + ${pedido.usuario.email}" th:text="${pedido.usuario.email}" class="enlace-guinda">correo</a>
+                <th:block th:if="${pedido.usuario.telefono}"> · <i class="bi bi-telephone"></i>
+                    <span th:text="${pedido.usuario.telefono}">999999999</span></th:block>
+            </p>
+            <ul>
+                <li th:each="d : ${pedido.detalles}"
+                    th:text="${d.cantidad} + ' × ' + ${d.producto.nombre} + ' (S/ ' + ${#numbers.formatDecimal(d.subtotal, 1, 2)} + ')'">
+                    1 × Pan camote
+                </li>
+            </ul>
+            <p th:if="${pedido.direccionEntrega}" class="small text-muted mt-2 mb-0">
+                <i class="bi bi-geo-alt"></i> <span th:text="${pedido.direccionEntrega}">Dirección</span>
+            </p>
+        </article>
+
+        <form th:replace="~{fragments/layout :: salirMovil}"></form>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

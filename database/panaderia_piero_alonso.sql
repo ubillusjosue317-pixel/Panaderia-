@@ -24,6 +24,7 @@ CREATE TABLE usuario (
     email           VARCHAR(100) NOT NULL UNIQUE,
     telefono        VARCHAR(15),
     password        VARCHAR(255) NOT NULL,
+    totp_secreto    VARCHAR(32),
     fecha_registro  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol) REFERENCES rol (id_rol)
 );
@@ -74,6 +75,17 @@ CREATE TABLE detalle_pedido (
     CONSTRAINT fk_detalle_pedido   FOREIGN KEY (id_pedido)   REFERENCES pedido (id_pedido),
     CONSTRAINT fk_detalle_producto FOREIGN KEY (id_producto) REFERENCES producto (id_producto),
     CONSTRAINT chk_detalle_cantidad CHECK (cantidad > 0)
+);
+
+CREATE TABLE mensaje (
+    id_mensaje       INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario       INT NOT NULL,
+    asunto           VARCHAR(100)  NOT NULL,
+    contenido        VARCHAR(1000) NOT NULL,
+    fecha_envio      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    respuesta        VARCHAR(1000),
+    fecha_respuesta  DATETIME,
+    CONSTRAINT fk_mensaje_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
 );
 
 -- Datos base

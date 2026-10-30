@@ -1,5 +1,7 @@
 package com.utp.panaderia.controller.admin;
 
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,11 +11,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.utp.panaderia.dto.ProductoForm;
 import com.utp.panaderia.model.Producto;
 import com.utp.panaderia.service.CategoriaService;
+import com.utp.panaderia.service.ImagenService;
 import com.utp.panaderia.service.ProductoService;
 
 import jakarta.validation.Valid;
@@ -27,6 +32,9 @@ public class ProductoAdminController {
 
     @Autowired
     private CategoriaService categoriaService;
+
+    @Autowired
+    private ImagenService imagenService;
 
     @GetMapping
     public String listar(Model model) {
@@ -61,7 +69,16 @@ public class ProductoAdminController {
 
     @PostMapping("/guardar")
     public String guardar(@Valid @ModelAttribute("producto") ProductoForm form, BindingResult result,
+                          @RequestParam(required = false) MultipartFile archivoImagen,
                           Model model, RedirectAttributes redirect) {
+        // si eligio una foto desde su PC, reemplaza a la imagen anterior
+        if (!result.hasErrors() && archivoImagen != null && !archivoImagen.isEmpty()) {
+            try {
+                form.setImagenUrl(imagenService.guardarImagenProducto(archivoImagen));
+            } catch (IllegalArgumentException e) {
+                result.rejectValue("imagenUrl", "imagen", e.getMessage());
+            }
+        }
         if (result.hasErrors()) {
             model.addAttribute("categorias", categoriaService.listar());
             return "admin/productos/formulario";
@@ -85,6 +102,19 @@ public class ProductoAdminController {
             redirect.addFlashAttribute("mensaje", producto.getNombre() + " ahora está visible en el catálogo.");
         } else {
             redirect.addFlashAttribute("mensaje", producto.getNombre() + " ahora está oculto del catálogo.");
+        }
+        return "redirect:/admin/productos";
+    }
+
+    @PostMapping("/{id}/precio")
+    public String cambiarPrecio(@PathVariable Integer id, @RequestParam(required = false) BigDecimal precio,
+                                RedirectAttributes redirect) {
+        try {
+            Producto producto = productoService.actualizarPrecio(id, precio);
+            redirect.addFlashAttribute("mensaje", "Nuevo precio de " + producto.getNombre() + ": S/ "
+                    + producto.getPrecio().setScale(2));
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/productos";
     }

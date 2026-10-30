@@ -137,21 +137,25 @@ public class DatosIniciales implements CommandLineRunner {
         }
     }
 
-    // Pone una foto de referencia solo a los productos que no tienen imagen
+    // Pone una foto de referencia a los productos que no tienen imagen.
+    // Las fotos estan dentro del proyecto (static/img/productos) para que se vean en cualquier PC.
+    // Antes eran enlaces a Unsplash, esos tambien se reemplazan por la copia local.
     private void asignarImagenesFaltantes() {
         Map<String, String> fotos = new HashMap<>();
-        fotos.put("pan camote", "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=900&q=85");
-        fotos.put("pan francés", "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=900&q=85");
-        fotos.put("baguette clásica", "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=900&q=85");
-        fotos.put("torta moka", "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&q=85");
-        fotos.put("torta de chocolate", "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&q=85");
-        fotos.put("croissant", "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=900&q=85");
-        fotos.put("empanada de carne", "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=900&q=85");
-        fotos.put("roll de canela", "https://images.unsplash.com/photo-1509365465985-25d11c17e812?w=900&q=85");
+        fotos.put("pan camote", "/img/productos/pan-camote.jpg");
+        fotos.put("pan francés", "/img/productos/pan-frances.jpg");
+        fotos.put("baguette clásica", "/img/productos/pan-frances.jpg");
+        fotos.put("torta moka", "/img/productos/torta.jpg");
+        fotos.put("torta de chocolate", "/img/productos/torta.jpg");
+        fotos.put("croissant", "/img/productos/croissant.jpg");
+        fotos.put("empanada de carne", "/img/productos/empanada.jpg");
+        fotos.put("roll de canela", "/img/productos/roll-canela.jpg");
 
         for (Producto p : productoRepository.findAll()) {
             String foto = fotos.get(p.getNombre().toLowerCase());
-            if (foto != null && (p.getImagenUrl() == null || p.getImagenUrl().isBlank())) {
+            String actual = p.getImagenUrl();
+            boolean sinFoto = actual == null || actual.isBlank() || actual.startsWith("https://images.unsplash.com/");
+            if (foto != null && sinFoto) {
                 p.setImagenUrl(foto);
                 productoRepository.save(p);
             }

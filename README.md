@@ -27,7 +27,7 @@ y hagan pedidos desde el celular o la PC, y que el personal gestione los product
 - Bootstrap 5 + CSS propio (responsive)
 - Spring Data JPA (Hibernate)
 - MySQL 8
-- Spring Security (BCrypt + roles)
+- Spring Security (BCrypt + roles + verificación en 2 pasos TOTP)
 - Lombok
 - JUnit 5
 
@@ -98,6 +98,41 @@ Para apagarlo: `Ctrl + C` en la ventana de PowerShell.
 
 **Usuario administrador:** `admin@pieroalonso.pe` / `Admin12345`
 
+### Verificación en 2 pasos
+
+Todos los usuarios (clientes y administrador) deben ingresar un código de 6 dígitos después de la contraseña.
+Hay que tener en el celular **Google Authenticator** o **Microsoft Authenticator** (gratis en Play Store / App Store).
+
+1. La primera vez que inicias sesión aparece un código QR: escanéalo con la app.
+2. Escribe el código de 6 dígitos que muestra la app. Desde ahí, cada inicio de sesión pide el código.
+3. Si fallas 5 veces se cierra la sesión y hay que volver a poner la contraseña.
+
+La hora del celular y de la PC deben estar correctas (automáticas), si no el código sale como incorrecto.
+
+Si alguien cambia de celular o borra la app, se reinicia su verificación desde MySQL y la próxima vez le aparece otro QR:
+
+```sql
+UPDATE usuario SET totp_secreto = NULL WHERE email = 'correo@del.usuario';
+```
+
+Cada base de datos es independiente: si abres el proyecto en otra PC, el administrador escanea un QR nuevo ahí.
+
+### Panel del administrador
+
+El administrador no ve las opciones de compra (Explorar, carrito, Favoritos). Su menú tiene:
+
+- **Productos**: crear y editar productos, cambiar el precio directo desde la tabla y subir la foto desde la PC.
+- **Pedidos**: todos los pedidos de los clientes, filtrados por estado; se cambia el estado (Pendiente → En preparación → Listo → Entregado).
+- **Mensajería**: consultas que escriben los clientes desde su sección *Mensajes*; el administrador las responde y el cliente ve la respuesta ahí mismo.
+
+### Imágenes de los productos
+
+Las fotos de los productos de ejemplo están dentro del proyecto en `src/main/resources/static/img/productos/`,
+por eso se ven en cualquier PC.
+
+Las fotos que sube el administrador desde el formulario se guardan en la carpeta `uploads/` (al lado de `pom.xml`)
+y no se suben a GitHub, igual que la base de datos: cada PC tiene sus propios productos y sus propias fotos.
+
 ### Verlo desde el celular
 
 Con la PC y el celular en el mismo Wi-Fi:
@@ -143,6 +178,7 @@ y arrancar con:
 
 - [x] Modelo de base de datos
 - [x] Registro e inicio de sesión
+- [x] Verificación en 2 pasos (app autenticadora)
 - [x] Roles (cliente / administrador)
 - [x] Inicio, Explorar (búsqueda y filtro por categoría)
 - [x] Favoritos y carrito de compras
@@ -150,6 +186,8 @@ y arrancar con:
 - [x] Historial de pedidos del cliente
 - [x] Mantenimiento de productos (admin)
 - [x] Diseño para celular y computadora
-- [ ] Cambio de estado de pedidos (admin)
+- [x] Cambio de estado de pedidos (admin)
+- [x] Mensajería entre clientes y administrador
+- [x] Subida de imágenes de productos
 - [ ] Promociones
 - [ ] Reportes

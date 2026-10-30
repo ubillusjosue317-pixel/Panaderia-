@@ -26,7 +26,22 @@
         <span><small>PANADERÍA</small><b>Piero Alonso</b></span>
     </a>
 
-    <nav class="menu-opciones">
+    <!-- El administrador no compra: solo ve sus ventanas de gestion -->
+    <nav class="menu-opciones" sec:authorize="hasRole('ADMINISTRADOR')">
+        <a th:href="@{/admin/productos}" th:classappend="${activa == 'admin'} ? 'activo'">
+            <i class="bi bi-box-seam"></i> Productos
+        </a>
+        <a th:href="@{/admin/pedidos}" th:classappend="${activa == 'admin-pedidos'} ? 'activo'">
+            <i class="bi bi-receipt"></i> Pedidos
+            <span class="contador" th:if="${pedidosPendientes > 0}" th:text="${pedidosPendientes}">0</span>
+        </a>
+        <a th:href="@{/admin/mensajes}" th:classappend="${activa == 'admin-mensajes'} ? 'activo'">
+            <i class="bi bi-chat-dots"></i> Mensajería
+            <span class="contador" th:if="${mensajesPendientes > 0}" th:text="${mensajesPendientes}">0</span>
+        </a>
+    </nav>
+
+    <nav class="menu-opciones" sec:authorize="!hasRole('ADMINISTRADOR')">
         <a th:href="@{/}" th:classappend="${activa == 'inicio'} ? 'activo'">
             <i class="bi bi-house-door"></i> Inicio
         </a>
@@ -44,14 +59,14 @@
            th:classappend="${activa == 'historial'} ? 'activo'">
             <i class="bi bi-receipt"></i> Mis pedidos
         </a>
-        <a sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/admin/productos}"
-           th:classappend="${activa == 'admin'} ? 'activo'">
-            <i class="bi bi-gear"></i> Administración
+        <a sec:authorize="isAuthenticated()" th:href="@{/mensajes}"
+           th:classappend="${activa == 'mensajes'} ? 'activo'">
+            <i class="bi bi-chat-dots"></i> Mensajes
         </a>
     </nav>
 
     <div class="menu-abajo">
-        <div class="promo-lateral">
+        <div class="promo-lateral" sec:authorize="!hasRole('ADMINISTRADOR')">
             <strong>Tu pan, directo<br>a casa.</strong>
             <p>Haz tu pedido y recíbelo recién horneado.</p>
             <a th:href="@{/pedidos}" class="boton-dorado">Ver mi pedido</a>
@@ -70,7 +85,21 @@
     </div>
 </aside>
 
-<nav class="nav-inferior solo-movil" aria-label="Navegación">
+<nav class="nav-inferior solo-movil" aria-label="Navegación" sec:authorize="hasRole('ADMINISTRADOR')">
+    <a th:href="@{/admin/productos}" th:classappend="${activa == 'admin'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'admin'} ? 'bi-box-seam-fill' : 'bi-box-seam'"></i>Productos
+    </a>
+    <a th:href="@{/admin/pedidos}" th:classappend="${activa == 'admin-pedidos'} ? 'activo'">
+        <i class="bi bi-receipt-cutoff"></i>Pedidos
+        <span class="contador-movil" th:if="${pedidosPendientes > 0}" th:text="${pedidosPendientes}">0</span>
+    </a>
+    <a th:href="@{/admin/mensajes}" th:classappend="${activa == 'admin-mensajes'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'admin-mensajes'} ? 'bi-chat-dots-fill' : 'bi-chat-dots'"></i>Mensajes
+        <span class="contador-movil" th:if="${mensajesPendientes > 0}" th:text="${mensajesPendientes}">0</span>
+    </a>
+</nav>
+
+<nav class="nav-inferior solo-movil" aria-label="Navegación" sec:authorize="!hasRole('ADMINISTRADOR')">
     <a th:href="@{/}" th:classappend="${activa == 'inicio'} ? 'activo'">
         <i class="bi" th:classappend="${activa == 'inicio'} ? 'bi-house-door-fill' : 'bi-house-door'"></i>Inicio
     </a>
@@ -87,11 +116,7 @@
     <a sec:authorize="isAnonymous()" th:href="@{/login}">
         <i class="bi bi-person"></i>Cuenta
     </a>
-    <a sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/admin/productos}"
-       th:classappend="${activa == 'admin'} ? 'activo'">
-        <i class="bi bi-person-gear"></i>Cuenta
-    </a>
-    <a sec:authorize="isAuthenticated() and !hasRole('ADMINISTRADOR')" th:href="@{/mis-pedidos}"
+    <a sec:authorize="isAuthenticated()" th:href="@{/mis-pedidos}"
        th:classappend="${activa == 'historial'} ? 'activo'">
         <i class="bi" th:classappend="${activa == 'historial'} ? 'bi-person-fill' : 'bi-person'"></i>Cuenta
     </a>
@@ -107,7 +132,7 @@
             <h2 sec:authorize="isAnonymous()">Invitado</h2>
         </div>
     </div>
-    <div class="acciones-superior">
+    <div class="acciones-superior" sec:authorize="!hasRole('ADMINISTRADOR')">
         <form th:action="@{/explorar}" method="get" class="buscador">
             <button type="submit" aria-label="Buscar"><i class="bi bi-search"></i></button>
             <input type="search" name="q" placeholder="Buscar panes, pasteles..." th:value="${busqueda}">
@@ -137,8 +162,10 @@
 <div th:fragment="tarjetas(productos)" class="grilla-productos">
     <article class="tarjeta-producto" th:each="p : ${productos}">
         <div class="foto-producto">
-            <img th:src="${p.imagenUrl != null} ? ${p.imagenUrl} : @{/img/producto-default.svg}"
-                 th:alt="${p.nombre}" loading="lazy">
+            <!-- si la imagen no carga (ruta mal escrita, sin internet) se muestra la imagen por defecto -->
+            <img th:src="${p.imagenUrl != null} ? @{${p.imagenUrl}} : @{/img/producto-default.svg}"
+                 th:alt="${p.nombre}" loading="lazy"
+                 th:onerror="|this.onerror=null; this.src='@{/img/producto-default.svg}'|">
             <span class="etiqueta-unidad" th:if="${p.categoria.nombre == 'Pastelería'}">PORCIÓN</span>
             <span class="etiqueta-unidad" th:unless="${p.categoria.nombre == 'Pastelería'}">1 UNIDAD</span>
             <form th:action="@{/favoritos/{id}(id=${p.id})}" method="post" class="form-favorito">

@@ -15,7 +15,8 @@
 
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <form th:action="@{/admin/productos/guardar}" th:object="${producto}" method="post" novalidate>
+                <form th:action="@{/admin/productos/guardar}" th:object="${producto}" method="post"
+                      enctype="multipart/form-data" novalidate>
                     <input type="hidden" th:field="*{id}">
 
                     <div class="row g-3">
@@ -28,11 +29,11 @@
                         <div class="col-md-4">
                             <label for="precio" class="form-label">Precio (S/)</label>
                             <input type="number" id="precio" th:field="*{precio}" class="form-control"
-                                   th:errorclass="is-invalid" step="0.10" min="0">
+                                   th:errorclass="is-invalid" step="0.01" min="0">
                             <div class="invalid-feedback" th:errors="*{precio}"></div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <label for="idCategoria" class="form-label">Categoría</label>
                             <select id="idCategoria" th:field="*{idCategoria}" class="form-select"
                                     th:errorclass="is-invalid">
@@ -41,11 +42,22 @@
                             </select>
                             <div class="invalid-feedback" th:errors="*{idCategoria}"></div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="imagenUrl" class="form-label">Imagen (URL o ruta)</label>
-                            <input type="text" id="imagenUrl" th:field="*{imagenUrl}" class="form-control"
-                                   th:errorclass="is-invalid" placeholder="/img/productos/pan-camote.jpg">
-                            <div class="invalid-feedback" th:errors="*{imagenUrl}"></div>
+                        <div class="col-12">
+                            <label for="archivoImagen" class="form-label">Imagen</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <img id="vistaPrevia" class="miniatura-admin grande" alt="Vista previa"
+                                     th:src="${!#strings.isEmpty(producto.imagenUrl)} ?@{${producto.imagenUrl}} : @{/img/producto-default.svg}"
+                                     th:onerror="|this.onerror=null; this.src='@{/img/producto-default.svg}'|">
+                                <div class="flex-grow-1">
+                                    <input type="file" id="archivoImagen" name="archivoImagen" class="form-control"
+                                           accept="image/jpeg,image/png,image/webp"
+                                           th:classappend="${#fields.hasErrors('imagenUrl')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{imagenUrl}"></div>
+                                    <div class="form-text">JPG, PNG o WEBP de hasta 5 MB. Si no eliges otra, se mantiene la actual.</div>
+                                </div>
+                            </div>
+                            <!-- la imagen actual se conserva si no suben una nueva -->
+                            <input type="hidden" th:field="*{imagenUrl}">
                         </div>
 
                         <div class="col-12">
@@ -74,5 +86,20 @@
 </div>
 
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    // muestra la foto elegida antes de guardar y avisa si pesa mas de 5 MB
+    document.getElementById('archivoImagen').addEventListener('change', function () {
+        const archivo = this.files[0];
+        if (!archivo) {
+            return;
+        }
+        if (archivo.size > 5 * 1024 * 1024) {
+            alert('La imagen no puede pesar más de 5 MB.');
+            this.value = '';
+            return;
+        }
+        document.getElementById('vistaPrevia').src = URL.createObjectURL(archivo);
+    });
+</script>
 </body>
 </html>

@@ -916,7 +916,7 @@ h1, h2, h3 {
     flex: 1;
     background:
         linear-gradient(rgba(79, 26, 28, .55), rgba(79, 26, 28, .55)),
-        url("https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1500&q=85") center / cover;
+        url("../img/fondo-login.jpg") center / cover;
 }
 
 .auth-imagen a {
@@ -999,6 +999,44 @@ h1, h2, h3 {
 }
 
 .auth-cambiar a {
+    text-decoration: underline;
+}
+
+/* verificacion en 2 pasos */
+.qr-dos-pasos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 22px;
+    text-align: center;
+}
+
+.qr-dos-pasos img {
+    border-radius: var(--radio-campo);
+    background-color: var(--blanco);
+    padding: 8px;
+}
+
+.qr-dos-pasos code {
+    color: var(--vino);
+    font-size: 14px;
+    letter-spacing: 1px;
+    word-break: break-all;
+}
+
+.form-auth .codigo-dos-pasos {
+    text-align: center;
+    font-size: 22px;
+    letter-spacing: 8px;
+    margin-bottom: 18px;
+}
+
+.boton-enlace {
+    border: 0;
+    background: none;
+    padding: 0;
+    color: var(--vino-enlace);
     text-decoration: underline;
 }
 
@@ -1327,6 +1365,89 @@ h1, h2, h3 {
 
 .tabla-admin .text-bg-secondary {
     background-color: var(--texto-gris) !important;
+}
+
+.miniatura-admin {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 10px;
+    background-color: var(--gris-foto);
+}
+
+.miniatura-admin.grande {
+    width: 72px;
+    height: 72px;
+}
+
+/* precio editable dentro de la tabla de productos */
+.form-precio {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-precio input {
+    width: 96px;
+    text-align: right;
+}
+
+/* filtros de Pedidos y Mensajeria */
+.filtros-admin {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.filtros-admin a {
+    padding: 7px 14px;
+    border-radius: var(--radio-pastilla);
+    background-color: var(--gris-pastilla);
+    color: var(--texto-pastilla);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.filtros-admin a span {
+    margin-left: 4px;
+    opacity: .7;
+}
+
+.filtros-admin a.activo {
+    background-color: var(--vino);
+    color: var(--blanco);
+}
+
+.form-estado {
+    display: flex;
+    gap: 6px;
+}
+
+.form-estado select {
+    width: auto;
+}
+
+.texto-mensaje {
+    margin: 12px 0;
+    white-space: pre-line;
+}
+
+.respuesta-mensaje {
+    padding: 12px 16px;
+    border-left: 3px solid var(--vino);
+    border-radius: 8px;
+    background-color: var(--rosa-icono);
+    white-space: pre-line;
+}
+
+.respuesta-mensaje small {
+    display: block;
+    color: var(--vino);
+    font-weight: 600;
+    margin-bottom: 4px;
 }
 
 /* ================= Solo escritorio y tablet (en celular lo define movil.css) ================= */

@@ -73,7 +73,7 @@ class NavegacionTest {
     void elAdministradorInicialPuedeIniciarSesion() throws Exception {
         mvc.perform(formLogin("/login").user("email", "admin@pieroalonso.pe").password("Admin12345"))
                 .andExpect(authenticated())
-                .andExpect(redirectedUrl("/admin/productos"));
+                .andExpect(redirectedUrl("/verificacion"));
     }
 
     @Test

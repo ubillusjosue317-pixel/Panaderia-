@@ -1,5 +1,6 @@
 package com.utp.panaderia.service;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface ProductoService {
     Producto guardar(ProductoForm form);
 
     Producto cambiarDisponibilidad(Integer id);
+
+    Producto actualizarPrecio(Integer id, BigDecimal precio);
 }

@@ -36,6 +36,11 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
 
+    // Clave de la verificacion en 2 pasos (Google/Microsoft Authenticator).
+    // Es null hasta que el usuario escanea el QR en su primer inicio de sesion.
+    @Column(name = "totp_secreto", length = 32)
+    private String totpSecreto;
+
     @Column(name = "fecha_registro", nullable = false, updatable = false)
     private LocalDateTime fechaRegistro;
 

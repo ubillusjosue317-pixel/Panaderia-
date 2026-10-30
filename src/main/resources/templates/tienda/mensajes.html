@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mensajes')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('mensajes')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <span class="antetitulo">CONTACTO</span>
+        <h1 class="titulo-pagina">Mensajes</h1>
+        <p class="texto-gris">¿Tienes una consulta, un pedido especial o un reclamo? Escríbenos y te responderemos aquí.</p>
+
+        <div class="caja-blanca tarjeta-pedido">
+            <form th:action="@{/mensajes}" th:object="${nuevo}" method="post" novalidate>
+                <label for="asunto" class="form-label">Asunto</label>
+                <input type="text" id="asunto" th:field="*{asunto}" class="form-control" maxlength="100"
+                       th:errorclass="is-invalid" placeholder="Ej. Torta para cumpleaños">
+                <div class="invalid-feedback" th:errors="*{asunto}"></div>
+
+                <label for="contenido" class="form-label mt-3">Mensaje</label>
+                <textarea id="contenido" th:field="*{contenido}" class="form-control" rows="4" maxlength="1000"
+                          th:errorclass="is-invalid"></textarea>
+                <div class="invalid-feedback" th:errors="*{contenido}"></div>
+
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-guinda"><i class="bi bi-send"></i> Enviar</button>
+                </div>
+            </form>
+        </div>
+
+        <h2 class="h5 mt-4 mb-3" th:unless="${#lists.isEmpty(mensajes)}">Mis consultas</h2>
+
+        <article class="caja-blanca tarjeta-pedido" th:each="m : ${mensajes}">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="me-auto">
+                    <h2 th:text="${m.asunto}">Asunto</h2>
+                    <small class="text-muted" th:text="${#temporals.format(m.fechaEnvio, 'dd/MM/yyyy HH:mm')}">fecha</small>
+                </div>
+                <span th:if="${m.respondido}" class="pastilla">Respondido</span>
+                <span th:unless="${m.respondido}" class="pastilla">En espera</span>
+            </div>
+            <p class="texto-mensaje" th:text="${m.contenido}">Contenido</p>
+            <div th:if="${m.respondido}" class="respuesta-mensaje">
+                <small th:text="'Panadería Piero Alonso · ' + ${#temporals.format(m.fechaRespuesta, 'dd/MM/yyyy HH:mm')}">Respuesta</small>
+                <p class="mb-0" th:text="${m.respuesta}">Respuesta</p>
+            </div>
+        </article>
+
+        <form th:replace="~{fragments/layout :: salirMovil}"></form>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

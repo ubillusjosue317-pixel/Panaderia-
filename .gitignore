@@ -5,6 +5,9 @@ target/
 src/main/resources/application-local.properties
 data/
 
+# Fotos que sube el administrador (cada PC tiene su propia base de datos)
+uploads/
+
 .idea/
 *.iml
 .vscode/

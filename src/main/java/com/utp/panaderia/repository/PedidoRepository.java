@@ -22,4 +22,19 @@ public interface PedidoRepository extends JpaRepository<Pedido, Integer> {
             order by p.fechaPedido desc
             """)
     List<Pedido> listarConDetalles(@Param("idUsuario") Integer idUsuario);
+
+    // todos los pedidos para el administrador (con el cliente y los productos), filtrando por estado si se elige
+    @Query("""
+            select distinct p from Pedido p
+            join fetch p.usuario
+            left join fetch p.detalles d
+            left join fetch d.producto
+            where (:idEstado is null or p.estado.id = :idEstado)
+            order by p.fechaPedido desc
+            """)
+    List<Pedido> listarParaAdmin(@Param("idEstado") Integer idEstado);
+
+    long countByEstadoNombre(String nombre);
+
+    long countByEstadoId(Integer idEstado);
 }

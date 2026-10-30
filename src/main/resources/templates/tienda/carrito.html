@@ -25,8 +25,9 @@
         <div th:unless="${#lists.isEmpty(items)}" class="carrito">
             <div class="caja-blanca">
                 <div class="fila-carrito" th:each="item : ${items}">
-                    <img th:src="${item.producto.imagenUrl != null} ? ${item.producto.imagenUrl} : @{/img/producto-default.svg}"
-                         th:alt="${item.producto.nombre}">
+                    <img th:src="${item.producto.imagenUrl != null} ? @{${item.producto.imagenUrl}} : @{/img/producto-default.svg}"
+                         th:alt="${item.producto.nombre}"
+                         th:onerror="|this.onerror=null; this.src='@{/img/producto-default.svg}'|">
                     <div class="detalle">
                         <h3 th:text="${item.producto.nombre}">Pan camote</h3>
                         <small th:text="${item.producto.categoria.nombre} + ' · S/ ' + ${#numbers.formatDecimal(item.producto.precio, 1, 2)} + ' c/u'">Panadería</small>

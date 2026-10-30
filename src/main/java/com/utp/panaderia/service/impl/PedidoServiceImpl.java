@@ -1,11 +1,15 @@
 package com.utp.panaderia.service.impl;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.utp.panaderia.model.EstadoPedido;
 import com.utp.panaderia.model.Pedido;
@@ -81,5 +85,41 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional(readOnly = true)
     public List<Pedido> listarPorUsuario(Integer idUsuario) {
         return pedidoRepository.listarConDetalles(idUsuario);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Pedido> listarParaAdmin(Integer idEstado) {
+        return pedidoRepository.listarParaAdmin(idEstado);
+    }
+
+    @Override
+    public List<EstadoPedido> listarEstados() {
+        return estadoRepository.findAll(Sort.by("id"));
+    }
+
+    @Override
+    public Map<Integer, Long> contarPorEstado() {
+        Map<Integer, Long> cantidades = new LinkedHashMap<>();
+        for (EstadoPedido estado : listarEstados()) {
+            cantidades.put(estado.getId(), pedidoRepository.countByEstadoId(estado.getId()));
+        }
+        return cantidades;
+    }
+
+    @Override
+    public long contarPendientes() {
+        return pedidoRepository.countByEstadoNombre(EstadoPedido.PENDIENTE);
+    }
+
+    @Override
+    @Transactional
+    public Pedido cambiarEstado(Integer idPedido, Integer idEstado) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+        EstadoPedido estado = estadoRepository.findById(idEstado)
+                .orElseThrow(() -> new IllegalArgumentException("El estado elegido no existe."));
+        pedido.setEstado(estado);
+        return pedidoRepository.save(pedido);
     }
 }

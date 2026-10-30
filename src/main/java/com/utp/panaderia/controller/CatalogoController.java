@@ -10,8 +10,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.utp.panaderia.model.Producto;
+import com.utp.panaderia.model.Rol;
 import com.utp.panaderia.service.CategoriaService;
 import com.utp.panaderia.service.ProductoService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class CatalogoController {
@@ -23,7 +26,11 @@ public class CatalogoController {
     private CategoriaService categoriaService;
 
     @GetMapping("/")
-    public String inicio(Model model) {
+    public String inicio(HttpServletRequest request, Model model) {
+        // el administrador no compra, su inicio es el panel
+        if (request.isUserInRole(Rol.ADMINISTRADOR)) {
+            return "redirect:/admin/productos";
+        }
         List<Producto> productos = productoService.listarDisponibles(null, null);
         // en el inicio solo se muestran los primeros 8
         if (productos.size() > 8) {

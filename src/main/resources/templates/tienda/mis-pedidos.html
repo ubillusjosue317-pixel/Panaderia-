@@ -12,7 +12,8 @@
 
         <span class="antetitulo">TUS COMPRAS</span>
         <h1 class="titulo-pagina">Mis pedidos</h1>
-        <p class="texto-gris">Revisa el estado de tus pedidos.</p>
+        <p class="texto-gris">Revisa el estado de tus pedidos.
+            ¿Alguna duda? <a th:href="@{/mensajes}" class="enlace-guinda">Escríbenos</a>.</p>
 
         <div th:if="${#lists.isEmpty(pedidos)}" class="vacio">
             <span class="vacio-icono"><i class="bi bi-receipt"></i></span>

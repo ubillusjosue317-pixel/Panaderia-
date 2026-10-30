@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mensajería')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('admin-mensajes')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido">
+        <div class="mb-4">
+            <h1 class="h3 mb-0">Mensajería</h1>
+            <p class="text-muted mb-0 small">Consultas de los clientes. La respuesta les aparece en su sección Mensajes.</p>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <div class="filtros-admin">
+            <a th:href="@{/admin/mensajes}" th:classappend="${!soloPendientes} ? 'activo'">Todos</a>
+            <a th:href="@{/admin/mensajes(pendientes=true)}" th:classappend="${soloPendientes} ? 'activo'">
+                Sin responder <span th:text="${mensajesPendientes}">0</span>
+            </a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(mensajes)}" class="vacio">
+            <span class="vacio-icono"><i class="bi bi-chat-dots"></i></span>
+            <h2>No hay mensajes</h2>
+            <p>Cuando un cliente escriba, su consulta aparecerá aquí.</p>
+        </div>
+
+        <article class="caja-blanca tarjeta-pedido" th:each="m : ${mensajes}">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="me-auto">
+                    <h2 th:text="${m.asunto}">Asunto</h2>
+                    <small class="text-muted">
+                        <span th:text="${m.usuario.nombreCompleto}">Cliente</span> ·
+                        <a th:href="'mailto:' + ${m.usuario.email}" th:text="${m.usuario.email}" class="enlace-guinda">correo</a> ·
+                        <span th:text="${#temporals.format(m.fechaEnvio, 'dd/MM/yyyy HH:mm')}">fecha</span>
+                    </small>
+                </div>
+                <span th:if="${m.respondido}" class="badge text-bg-success">Respondido</span>
+                <span th:unless="${m.respondido}" class="pastilla">Sin responder</span>
+            </div>
+
+            <p class="texto-mensaje" th:text="${m.contenido}">Contenido</p>
+
+            <div th:if="${m.respondido}" class="respuesta-mensaje">
+                <small th:text="'Tu respuesta · ' + ${#temporals.format(m.fechaRespuesta, 'dd/MM/yyyy HH:mm')}">Tu respuesta</small>
+                <p class="mb-0" th:text="${m.respuesta}">Respuesta</p>
+            </div>
+
+            <form th:unless="${m.respondido}" th:action="@{/admin/mensajes/{id}/responder(id=${m.id})}" method="post">
+                <label th:for="'respuesta' + ${m.id}" class="form-label small">Responder</label>
+                <textarea th:id="'respuesta' + ${m.id}" name="respuesta" class="form-control" rows="2"
+                          maxlength="1000" required></textarea>
+                <div class="text-end mt-2">
+                    <button type="submit" class="btn btn-sm btn-guinda"><i class="bi bi-send"></i> Enviar respuesta</button>
+                </div>
+            </form>
+        </article>
+
+        <form th:replace="~{fragments/layout :: salirMovil}"></form>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
