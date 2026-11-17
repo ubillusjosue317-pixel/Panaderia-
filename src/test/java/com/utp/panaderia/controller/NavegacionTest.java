@@ -3,6 +3,7 @@ package com.utp.panaderia.controller;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -12,12 +13,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.utp.panaderia.dto.RegistroPendiente;
+import com.utp.panaderia.util.Totp;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -82,7 +87,7 @@ class NavegacionTest {
                         .param("nombre", "Mateo")
                         .param("apellido", "Gómez")
                         .param("email", "mateo@correo.com")
-                        .param("password", "clave12345")
+                        .param("password", "Clave#12345")
                         .param("confirmarPassword", "otraClave1")
                         .param("aceptaTerminos", "true"))
                 .andExpect(status().isOk())
@@ -90,18 +95,31 @@ class NavegacionTest {
     }
 
     @Test
-    void registroCorrectoRedirigeAlLogin() throws Exception {
-        mvc.perform(post("/registro").with(csrf())
+    void registroCorrectoSeCompletaEscaneandoElQrYLuegoPuedeIniciarSesion() throws Exception {
+        MockHttpSession sesion = new MockHttpSession();
+        mvc.perform(post("/registro").session(sesion).with(csrf())
                         .param("nombre", "Lucía")
                         .param("apellido", "Ramos")
                         .param("email", "lucia@correo.com")
                         .param("telefono", "987654321")
-                        .param("password", "clave12345")
-                        .param("confirmarPassword", "clave12345")
+                        .param("password", "Clave#12345")
+                        .param("confirmarPassword", "Clave#12345")
                         .param("aceptaTerminos", "true"))
+                .andExpect(redirectedUrl("/registro/verificacion"));
+
+        // todavia no existe la cuenta: se crea al confirmar el codigo del Authenticator
+        mvc.perform(formLogin("/login").user("email", "lucia@correo.com").password("Clave#12345"))
+                .andExpect(unauthenticated());
+        mvc.perform(get("/registro/verificacion").session(sesion))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data:image/png;base64,")));
+
+        RegistroPendiente pendiente = (RegistroPendiente) sesion.getAttribute(AuthController.REGISTRO_PENDIENTE);
+        mvc.perform(post("/registro/verificacion").session(sesion).with(csrf())
+                        .param("codigo", Totp.codigoActual(pendiente.getSecreto())))
                 .andExpect(redirectedUrl("/login"));
 
-        mvc.perform(formLogin("/login").user("email", "lucia@correo.com").password("clave12345"))
+        mvc.perform(formLogin("/login").user("email", "lucia@correo.com").password("Clave#12345"))
                 .andExpect(authenticated().withRoles("CLIENTE"));
     }
 }

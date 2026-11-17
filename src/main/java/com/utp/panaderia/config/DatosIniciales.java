@@ -1,6 +1,8 @@
 package com.utp.panaderia.config;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import com.utp.panaderia.repository.EstadoPedidoRepository;
 import com.utp.panaderia.repository.ProductoRepository;
 import com.utp.panaderia.repository.RolRepository;
 import com.utp.panaderia.repository.UsuarioRepository;
+import com.utp.panaderia.util.Totp;
 
 // Se ejecuta al iniciar la app. Llena los roles, estados, categorias, el admin
 // y unos productos de prueba (solo si la tabla esta vacia)
@@ -98,7 +101,15 @@ public class DatosIniciales implements CommandLineRunner {
     }
 
     private void crearAdministrador() {
-        if (usuarioRepository.existsByEmail(adminEmail)) {
+        var existente = usuarioRepository.findByEmail(adminEmail);
+        if (existente.isPresent()) {
+            // un administrador sin clave de 2 pasos recibe una nueva (se muestra solo en la consola)
+            Usuario admin = existente.get();
+            if (admin.getTotpSecreto() == null) {
+                admin.setTotpSecreto(Totp.generarSecreto());
+                usuarioRepository.save(admin);
+                mostrarClaveDosPasos(admin);
+            }
             return;
         }
         Usuario admin = new Usuario();
@@ -106,9 +117,33 @@ public class DatosIniciales implements CommandLineRunner {
         admin.setNombre("Administrador");
         admin.setApellido("Piero Alonso");
         admin.setEmail(adminEmail);
-        admin.setPassword(passwordEncoder.encode(adminPassword));
+        String clave = adminPassword;
+        boolean generada = clave == null || clave.isBlank();
+        if (generada) {
+            // no hay clave por defecto: se genera una aleatoria y se muestra solo esta vez
+            byte[] bytes = new byte[12];
+            new SecureRandom().nextBytes(bytes);
+            clave = "Adm1n-" + Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        }
+        admin.setPassword(passwordEncoder.encode(clave));
+        // el administrador tiene su propia clave de Authenticator desde que se crea la cuenta
+        admin.setTotpSecreto(Totp.generarSecreto());
+        // la clave inicial (aunque venga de ADMIN_PASSWORD) se reemplaza en el primer ingreso
+        admin.setDebeCambiarPassword(true);
         usuarioRepository.save(admin);
         log.info("Usuario administrador creado: {}", adminEmail);
+        if (generada) {
+            log.warn("ADMIN_PASSWORD no estaba definida. Clave temporal del administrador (solo se muestra ahora): {}", clave);
+        }
+        mostrarClaveDosPasos(admin);
+    }
+
+    // Se muestra una sola vez, en la consola de quien arranca la app: esa persona la agrega a su
+    // Authenticator (Agregar cuenta > Ingresar clave de configuracion).
+    private void mostrarClaveDosPasos(Usuario admin) {
+        log.warn("VERIFICACION EN 2 PASOS DEL ADMINISTRADOR (solo se muestra ahora). En Google/Microsoft Authenticator "
+                + "elige 'Ingresar clave de configuracion' con cuenta {} y clave: {}",
+                admin.getEmail(), admin.getTotpSecreto());
     }
 
     private void crearProductosDeEjemplo() {

@@ -20,7 +20,9 @@ import com.utp.panaderia.repository.EstadoPedidoRepository;
 import com.utp.panaderia.repository.PedidoRepository;
 import com.utp.panaderia.repository.ProductoRepository;
 import com.utp.panaderia.repository.UsuarioRepository;
+import com.utp.panaderia.service.AuditoriaService;
 import com.utp.panaderia.service.PedidoService;
+import com.utp.panaderia.session.Carrito;
 
 @Service
 public class PedidoServiceImpl implements PedidoService {
@@ -36,6 +38,9 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Autowired
     private EstadoPedidoRepository estadoRepository;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     @Override
     @Transactional
@@ -74,6 +79,10 @@ public class PedidoServiceImpl implements PedidoService {
                     .orElseThrow(() -> new IllegalArgumentException("Uno de los productos ya no existe."));
             if (!producto.isDisponible()) {
                 throw new IllegalArgumentException("El producto " + producto.getNombre() + " ya no está disponible.");
+            }
+            if (item.getValue() == null || item.getValue() < 1 || item.getValue() > Carrito.MAXIMO_POR_PRODUCTO) {
+                throw new IllegalArgumentException("Máximo " + Carrito.MAXIMO_POR_PRODUCTO
+                        + " unidades por producto (" + producto.getNombre() + ").");
             }
             pedido.agregarDetalle(producto, item.getValue());
         }
@@ -119,7 +128,10 @@ public class PedidoServiceImpl implements PedidoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
         EstadoPedido estado = estadoRepository.findById(idEstado)
                 .orElseThrow(() -> new IllegalArgumentException("El estado elegido no existe."));
+        String anterior = pedido.getEstado() != null ? pedido.getEstado().getNombre() : "-";
         pedido.setEstado(estado);
-        return pedidoRepository.save(pedido);
+        Pedido guardado = pedidoRepository.save(pedido);
+        auditoriaService.registrar("ESTADO", "Pedido", idPedido, "estado " + anterior + " -> " + estado.getNombre());
+        return guardado;
     }
 }

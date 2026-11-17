@@ -55,8 +55,12 @@ public class PedidoController {
                           RedirectAttributes redirect) {
         Producto producto = productoService.buscarPorId(id);
         if (producto.isDisponible()) {
-            carrito.agregar(id);
-            redirect.addFlashAttribute("mensaje", producto.getNombre() + " se agregó a tu pedido.");
+            if (carrito.agregar(id)) {
+                redirect.addFlashAttribute("mensaje", producto.getNombre() + " se agregó a tu pedido.");
+            } else {
+                redirect.addFlashAttribute("error", "Máximo " + Carrito.MAXIMO_POR_PRODUCTO
+                        + " unidades por producto en cada pedido.");
+            }
         }
         return Redireccion.volver(referer, "/pedidos");
     }

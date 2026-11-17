@@ -41,6 +41,10 @@ public class Usuario {
     @Column(name = "totp_secreto", length = 32)
     private String totpSecreto;
 
+    // true cuando la persona debe reemplazar su contraseña antes de usar el sistema (admin recien creado)
+    @Column(name = "debe_cambiar_password", nullable = false, columnDefinition = "boolean default false")
+    private boolean debeCambiarPassword;
+
     @Column(name = "fecha_registro", nullable = false, updatable = false)
     private LocalDateTime fechaRegistro;
 

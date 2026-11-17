@@ -25,6 +25,7 @@ CREATE TABLE usuario (
     telefono        VARCHAR(15),
     password        VARCHAR(255) NOT NULL,
     totp_secreto    VARCHAR(32),
+    debe_cambiar_password BOOLEAN NOT NULL DEFAULT FALSE,
     fecha_registro  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol) REFERENCES rol (id_rol)
 );
@@ -86,6 +87,16 @@ CREATE TABLE mensaje (
     respuesta        VARCHAR(1000),
     fecha_respuesta  DATETIME,
     CONSTRAINT fk_mensaje_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+);
+
+CREATE TABLE auditoria (
+    id_auditoria BIGINT AUTO_INCREMENT PRIMARY KEY,
+    usuario      VARCHAR(100) NOT NULL,
+    accion       VARCHAR(50)  NOT NULL,
+    entidad      VARCHAR(50)  NOT NULL,
+    id_entidad   INT,
+    detalle      VARCHAR(500),
+    fecha        DATETIME     NOT NULL
 );
 
 -- Datos base

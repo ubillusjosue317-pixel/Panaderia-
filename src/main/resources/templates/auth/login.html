@@ -18,6 +18,9 @@
 
     <div class="auth-cuerpo">
         <div th:if="${param.error}" class="aviso error">Correo o contraseña incorrectos.</div>
+        <div th:if="${param.cuentaBloqueada}" class="aviso error">Demasiados intentos fallidos. Espera 15 minutos para volver a intentarlo.</div>
+        <div th:if="${param.expirada}" class="aviso error">Pasaron más de 5 minutos sin ingresar el código. Inicia sesión de nuevo.</div>
+        <div th:if="${param.sinClave}" class="aviso error">Tu cuenta no tiene configurada la verificación en 2 pasos. Vuelve a registrarte o contacta al administrador.</div>
         <div th:if="${param.salir}" class="aviso exito">Cerraste sesión correctamente.</div>
         <div th:if="${param.bloqueado}" class="aviso error">Demasiados códigos incorrectos. Vuelve a iniciar sesión.</div>
         <div th:if="${mensaje}" class="aviso exito" th:text="${mensaje}"></div>

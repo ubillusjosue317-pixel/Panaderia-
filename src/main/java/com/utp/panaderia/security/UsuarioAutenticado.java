@@ -17,8 +17,8 @@ public class UsuarioAutenticado extends User {
     private final Integer id;
     private final String nombre;
 
-    public UsuarioAutenticado(Usuario usuario) {
-        super(usuario.getEmail(), usuario.getPassword(),
+    public UsuarioAutenticado(Usuario usuario, boolean bloqueada) {
+        super(usuario.getEmail(), usuario.getPassword(), true, true, true, !bloqueada,
                 List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombre())));
         this.id = usuario.getId();
         this.nombre = usuario.getNombre();

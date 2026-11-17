@@ -6,6 +6,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -25,11 +26,14 @@ public class ProductoForm {
     private String descripcion;
 
     @NotNull(message = "El precio es obligatorio")
-    @DecimalMin(value = "0.00", message = "El precio no puede ser negativo")
+    @DecimalMin(value = "0.01", message = "El precio mínimo es S/ 0.01")
     @Digits(integer = 6, fraction = 2, message = "Formato de precio no válido")
     private BigDecimal precio;
 
+    // solo rutas propias del sitio (imagenes incluidas o subidas); no se aceptan URLs externas
     @Size(max = 255, message = "Máximo 255 caracteres")
+    @Pattern(regexp = "^$|^/(img|uploads)/[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*\\.(jpg|jpeg|png|webp|svg)$",
+            message = "La imagen debe subirse desde tu equipo; no se aceptan enlaces externos")
     private String imagenUrl;
 
     private boolean disponible = true;

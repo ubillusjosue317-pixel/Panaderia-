@@ -12,30 +12,49 @@ import jakarta.servlet.http.HttpSession;
 
 // Despues de poner bien la contraseña la sesion queda "pendiente" hasta que el usuario
 // escriba el codigo de su app autenticadora. Mientras tanto solo puede abrir /verificacion.
+// Si ademas tiene que cambiar su contraseña (primer ingreso del administrador), tampoco puede
+// abrir otra pagina que /cambiar-clave hasta hacerlo.
 public class VerificacionDosPasosFilter extends OncePerRequestFilter {
 
     // atributos que se guardan en la sesion
     public static final String PENDIENTE = "dosPasos.pendiente";
     public static final String DESTINO = "dosPasos.destino";
-    public static final String SECRETO_NUEVO = "dosPasos.secretoNuevo";
     public static final String INTENTOS = "dosPasos.intentos";
+    public static final String INICIO = "dosPasos.inicio";
+    public static final String CAMBIO_CLAVE = "cambioClave.pendiente";
+    private static final long LIMITE_MS = 5 * 60 * 1000L;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
         HttpSession sesion = request.getSession(false);
-        if (sesion != null && sesion.getAttribute(PENDIENTE) != null && !esRutaPermitida(request)) {
-            response.sendRedirect(request.getContextPath() + "/verificacion");
-            return;
+        if (sesion != null) {
+            // el segundo paso tiene que completarse en pocos minutos; si no, hay que empezar de nuevo
+            if (sesion.getAttribute(PENDIENTE) != null
+                    && sesion.getAttribute(INICIO) instanceof Long inicio
+                    && System.currentTimeMillis() - inicio > LIMITE_MS) {
+                sesion.invalidate();
+                response.sendRedirect(request.getContextPath() + "/login?expirada");
+                return;
+            }
+            String ruta = request.getRequestURI().substring(request.getContextPath().length());
+            if (sesion.getAttribute(PENDIENTE) != null && !ruta.equals("/verificacion") && !esComun(ruta)) {
+                response.sendRedirect(request.getContextPath() + "/verificacion");
+                return;
+            }
+            if (sesion.getAttribute(CAMBIO_CLAVE) != null && !ruta.equals("/cambiar-clave") && !esComun(ruta)) {
+                response.sendRedirect(request.getContextPath() + "/cambiar-clave");
+                return;
+            }
         }
         chain.doFilter(request, response);
     }
 
-    private boolean esRutaPermitida(HttpServletRequest request) {
-        String ruta = request.getRequestURI().substring(request.getContextPath().length());
-        return ruta.equals("/verificacion") || ruta.equals("/logout") || ruta.equals("/login")
-                || ruta.equals("/error") || ruta.startsWith("/css/") || ruta.startsWith("/js/")
-                || ruta.startsWith("/img/") || ruta.startsWith("/uploads/");
+    // rutas que siempre se pueden abrir: salir, errores y archivos estaticos
+    private boolean esComun(String ruta) {
+        return ruta.equals("/logout") || ruta.equals("/login") || ruta.equals("/error")
+                || ruta.startsWith("/css/") || ruta.startsWith("/js/") || ruta.startsWith("/img/")
+                || ruta.startsWith("/vendor/") || ruta.startsWith("/uploads/");
     }
 }

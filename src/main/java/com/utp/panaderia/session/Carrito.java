@@ -25,8 +25,17 @@ public class Carrito implements Serializable {
 
     private final Set<Integer> favoritos = new LinkedHashSet<>();
 
-    public void agregar(Integer idProducto) {
-        items.put(idProducto, items.getOrDefault(idProducto, 0) + 1);
+    // maximo de unidades de un mismo producto en un pedido
+    public static final int MAXIMO_POR_PRODUCTO = 20;
+
+    // devuelve false si ya se llego al maximo y no se agrego
+    public boolean agregar(Integer idProducto) {
+        int actual = items.getOrDefault(idProducto, 0);
+        if (actual >= MAXIMO_POR_PRODUCTO) {
+            return false;
+        }
+        items.put(idProducto, actual + 1);
+        return true;
     }
 
     public void quitar(Integer idProducto) {

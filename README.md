@@ -71,17 +71,20 @@ git clone https://github.com/ubillusjosue317-pixel/Panaderia-.git
 cd Panaderia-
 ```
 
-### 3. Poner la contraseña de MySQL
+### 3. Definir las credenciales (obligatorio)
 
-El proyecto usa el usuario `root` con contraseña `root`. Si tu MySQL tiene otra contraseña,
-escríbela en PowerShell antes de arrancar (solo dura mientras esa ventana esté abierta):
+El proyecto **ya no trae usuario ni contraseña por defecto**. Antes de arrancar, en PowerShell
+(solo dura mientras esa ventana esté abierta):
 
 ```powershell
-$env:DB_PASSWORD = "tu_contraseña"
+$env:DB_USER = "tu_usuario_mysql"
+$env:DB_PASSWORD = "tu_contraseña_mysql"
+$env:ADMIN_PASSWORD = "UnaClaveSegura123"   # clave del administrador (opcional)
 ```
 
-O cámbiala en `src/main/resources/application.properties` (línea `spring.datasource.password`),
-pero **sin subir ese cambio** a GitHub.
+Si no defines `ADMIN_PASSWORD`, se genera una clave aleatoria y se muestra **una sola vez** en la
+consola al crear el administrador (busca la línea `Clave temporal del administrador`).
+Sin `DB_USER` y `DB_PASSWORD` la aplicación no arranca.
 
 La base de datos `panaderia_piero_alonso` se crea sola, no hay que hacer nada en MySQL.
 
@@ -96,98 +99,42 @@ La primera vez demora unos minutos porque descarga las librerías. Cuando aparez
 
 Para apagarlo: `Ctrl + C` en la ventana de PowerShell.
 
-**Usuario administrador:** `admin@pieroalonso.pe` / `Admin12345`
+**Usuario administrador:** `admin@pieroalonso.pe` con la clave de `ADMIN_PASSWORD` (o la temporal de la consola).
 
 ### Verificación en 2 pasos
 
-Todos los usuarios (clientes y administrador) deben ingresar un código de 6 dígitos después de la contraseña.
-Hay que tener en el celular **Google Authenticator** o **Microsoft Authenticator** (gratis en Play Store / App Store).
+Cada cuenta (clientes y administrador) tiene **su propia clave** de **Google Authenticator** o
+**Microsoft Authenticator**, y se vincula cuando la cuenta se crea, no en el primer inicio de sesión:
 
-1. La primera vez que inicias sesión aparece un código QR: escanéalo con la app.
-2. Escribe el código de 6 dígitos que muestra la app. Desde ahí, cada inicio de sesión pide el código.
-3. Si fallas 5 veces se cierra la sesión y hay que volver a poner la contraseña.
+- **Clientes:** al registrarse, después de llenar el formulario aparece el QR. Se escanea, se escribe
+  el código de 6 dígitos y recién ahí se crea la cuenta.
+- **Administrador:** al crearse (primer arranque), la consola muestra una sola vez su clave. En la app:
+  *Agregar cuenta > Ingresar clave de configuración*, con el correo del administrador y esa clave.
+- En cada inicio de sesión se pide la contraseña y luego el código. Si fallas 5 veces, hay que volver a empezar.
+- Una cuenta sin clave de Authenticator no puede entrar.
 
-La hora del celular y de la PC deben estar correctas (automáticas), si no el código sale como incorrecto.
+**Empezar de cero:** `database/reiniciar_cuentas.sql` borra todas las cuentas (y sus pedidos y mensajes).
+Al reiniciar la app se crea de nuevo el administrador con clave y Authenticator nuevos.
 
-Si alguien cambia de celular o borra la app, se reinicia su verificación desde MySQL y la próxima vez le aparece otro QR:
+### Medidas de seguridad
 
-```sql
-UPDATE usuario SET totp_secreto = NULL WHERE email = 'correo@del.usuario';
-```
+- **Bloqueo de cuenta:** 5 contraseñas incorrectas seguidas bloquean el correo 15 minutos.
+- **Contraseñas:** mínimo 8 caracteres con mayúscula, minúscula, número y símbolo; se rechazan claves comunes (`Password#1`, `Admin#12345`, etc.).
+- **Administrador:** en su primer ingreso (después del código del Authenticator) debe reemplazar la contraseña inicial; no puede abrir otra página hasta hacerlo.
+- **Carrito:** máximo 20 unidades por producto. **Precio mínimo:** S/ 0.01.
+- **Imágenes:** solo se aceptan archivos subidos (JPG/PNG/WEBP); no se admiten URLs externas.
+- **Registro:** si el correo ya existe, la respuesta es igual a la de un registro nuevo.
+- **Auditoría:** los cambios del administrador (productos y estados de pedido) quedan en la tabla `auditoria` (quién, cuándo y qué cambió).
+- **Cabeceras y cookies:** CSP, X-Frame-Options, Referrer-Policy y Permissions-Policy; cookie de sesión `HttpOnly`, `SameSite=Lax` y `Secure`. Bootstrap y Bootstrap Icons se sirven desde el propio sitio (`static/vendor`), sin CDN.
 
-Cada base de datos es independiente: si abres el proyecto en otra PC, el administrador escanea un QR nuevo ahí.
+### HTTPS
 
-### Panel del administrador
-
-El administrador no ve las opciones de compra (Explorar, carrito, Favoritos). Su menú tiene:
-
-- **Productos**: crear y editar productos, cambiar el precio directo desde la tabla y subir la foto desde la PC.
-- **Pedidos**: todos los pedidos de los clientes, filtrados por estado; se cambia el estado (Pendiente → En preparación → Listo → Entregado).
-- **Mensajería**: consultas que escriben los clientes desde su sección *Mensajes*; el administrador las responde y el cliente ve la respuesta ahí mismo.
-
-### Imágenes de los productos
-
-Las fotos de los productos de ejemplo están dentro del proyecto en `src/main/resources/static/img/productos/`,
-por eso se ven en cualquier PC.
-
-Las fotos que sube el administrador desde el formulario se guardan en la carpeta `uploads/` (al lado de `pom.xml`)
-y no se suben a GitHub, igual que la base de datos: cada PC tiene sus propios productos y sus propias fotos.
-
-### Verlo desde el celular
-
-Con la PC y el celular en el mismo Wi-Fi:
-
-1. En PowerShell, `ipconfig` y copiar la "Dirección IPv4" (por ejemplo `192.168.1.25`).
-2. En el celular abrir `http://192.168.1.25:8080`
-3. Si no carga, Windows pedirá permiso de firewall para Java la primera vez: aceptar en "Redes privadas".
-
-### Probar sin MySQL (opcional)
-
-Crear el archivo `src/main/resources/application-local.properties` con:
-
-```properties
-spring.datasource.url=jdbc:h2:file:./data/panaderia;MODE=MySQL;DATABASE_TO_LOWER=TRUE
-spring.datasource.username=sa
-spring.datasource.password=
-spring.datasource.driver-class-name=org.h2.Driver
-```
-
-y arrancar con:
+Para forzar HTTPS hace falta un certificado. Para pruebas, uno autofirmado:
 
 ```powershell
-.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
+keytool -genkeypair -alias panaderia -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore keystore.p12 -validity 365 -dname "CN=localhost"
+$env:SSL_PASSWORD = "la_clave_que_pusiste"
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=https"
 ```
 
-### Pruebas
-
-```powershell
-.\mvnw.cmd test
-```
-
-### Problemas comunes
-
-| Mensaje | Solución |
-|---------|----------|
-| `java no se reconoce como un comando` | Reinstalar el JDK marcando "Set JAVA_HOME" y abrir una nueva ventana de PowerShell |
-| `Access denied for user 'root'` | La contraseña de MySQL no es `root`: usar `$env:DB_PASSWORD` (paso 3) |
-| `Communications link failure` | MySQL no está encendido: abrir "Servicios" de Windows e iniciar `MySQL80` |
-| `Port 8080 was already in use` | Ya hay otra copia corriendo: cerrarla con `Ctrl + C` |
-| `release version 21 not supported` | Hay un Java antiguo instalado: instalar el JDK 21 |
-
-## Avance
-
-- [x] Modelo de base de datos
-- [x] Registro e inicio de sesión
-- [x] Verificación en 2 pasos (app autenticadora)
-- [x] Roles (cliente / administrador)
-- [x] Inicio, Explorar (búsqueda y filtro por categoría)
-- [x] Favoritos y carrito de compras
-- [x] Confirmar pedido (recojo en tienda o delivery)
-- [x] Historial de pedidos del cliente
-- [x] Mantenimiento de productos (admin)
-- [x] Diseño para celular y computadora
-- [x] Cambio de estado de pedidos (admin)
-- [x] Mensajería entre clientes y administrador
-- [x] Subida de imágenes de productos
-- [ ] Promociones
-- [ ] Reportes
+Entonces se usa **https://localhost:8443** y todo http se redirige a https. No subir `keystore.p12` a GitHub.

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Verifica tu cuenta')}"></head>
+<body class="pagina-auth movil-login">
+
+<div class="auth-imagen"></div>
+
+<div class="auth-panel">
+    <div class="auth-cabecera">
+        <a th:href="@{/}" class="marca">
+            <span class="marca-icono"><i class="bi bi-basket2-fill"></i></span>
+            <span class="marca-movil">Panadería Piero Alonso</span>
+        </a>
+    </div>
+
+    <div class="auth-cuerpo">
+        <div th:if="${error}" class="aviso error" th:text="${error}"></div>
+
+        <h1 class="titulo-pagina">Último paso</h1>
+        <p class="texto-gris">Escanea este código con <b>Google Authenticator</b> o
+            <b>Microsoft Authenticator</b> desde tu celular. Será tu llave personal para entrar a tu cuenta.</p>
+        <div class="qr-dos-pasos">
+            <img th:src="${qr}" alt="Código QR para la app autenticadora" width="220" height="220">
+            <small>¿No puedes escanearlo? Ingresa esta clave en la app:</small>
+            <code th:text="${secreto}">ABCD EFGH</code>
+        </div>
+
+        <form th:action="@{/registro/verificacion}" method="post" class="form-auth">
+            <label for="codigo" class="form-label">Escribe el código de 6 dígitos que muestra la app</label>
+            <input type="text" id="codigo" name="codigo" class="form-control codigo-dos-pasos"
+                   inputmode="numeric" pattern="[0-9 ]{6,7}" maxlength="7" placeholder="000000"
+                   required autofocus autocomplete="one-time-code">
+            <button type="submit" class="boton-guinda">CREAR MI CUENTA <i class="bi bi-shield-check"></i></button>
+        </form>
+
+        <p class="auth-cambiar auth-pie"><a th:href="@{/registro}">Volver al registro</a></p>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

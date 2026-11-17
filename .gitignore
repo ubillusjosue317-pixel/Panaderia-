@@ -19,3 +19,5 @@ nbproject/
 *.log
 .DS_Store
 Thumbs.db
+
+keystore.p12

@@ -84,10 +84,10 @@ class AdministracionTest {
             form.setNombre("Carla");
             form.setApellido("Vega");
             form.setEmail(CLIENTE);
-            form.setPassword("clave12345");
-            form.setConfirmarPassword("clave12345");
+            form.setPassword("Clave#12345");
+            form.setConfirmarPassword("Clave#12345");
             form.setAceptaTerminos(true);
-            usuarioService.registrarCliente(form);
+            usuarioService.registrarCliente(form, com.utp.panaderia.util.Totp.generarSecreto());
         }
     }
 
@@ -114,8 +114,8 @@ class AdministracionTest {
                 .andExpect(flash().attribute("mensaje", containsString("S/ 3.75")));
         assertEquals(0, new BigDecimal("3.75").compareTo(producto("Roll de canela").getPrecio()));
 
-        mvc.perform(post("/admin/productos/" + p.getId() + "/precio").with(csrf()).param("precio", "-1"))
-                .andExpect(flash().attribute("error", containsString("negativo")));
+        mvc.perform(post("/admin/productos/" + p.getId() + "/precio").with(csrf()).param("precio", "0.00"))
+                .andExpect(flash().attribute("error", containsString("mínimo")));
     }
 
     @Test

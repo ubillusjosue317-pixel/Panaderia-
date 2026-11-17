@@ -53,10 +53,10 @@ class TiendaTest {
             form.setNombre("Rosa");
             form.setApellido("Quispe");
             form.setEmail(CLIENTE);
-            form.setPassword("clave12345");
-            form.setConfirmarPassword("clave12345");
+            form.setPassword("Clave#12345");
+            form.setConfirmarPassword("Clave#12345");
             form.setAceptaTerminos(true);
-            usuarioService.registrarCliente(form);
+            usuarioService.registrarCliente(form, com.utp.panaderia.util.Totp.generarSecreto());
         }
     }
 

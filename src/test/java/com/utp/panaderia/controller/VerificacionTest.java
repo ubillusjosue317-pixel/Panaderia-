@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
@@ -19,11 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.utp.panaderia.dto.RegistroForm;
+import com.utp.panaderia.model.Rol;
+import com.utp.panaderia.model.Usuario;
+import com.utp.panaderia.repository.RolRepository;
 import com.utp.panaderia.repository.UsuarioRepository;
-import com.utp.panaderia.security.VerificacionDosPasosFilter;
 import com.utp.panaderia.service.UsuarioService;
 import com.utp.panaderia.util.Totp;
 
@@ -40,6 +44,12 @@ class VerificacionTest {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private RolRepository rolRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Test
     void elCodigoGeneradoEsValidoYOtroNo() {
         String secreto = Totp.generarSecreto();
@@ -53,33 +63,38 @@ class VerificacionTest {
     }
 
     @Test
-    void primerIngresoMuestraQrYAlConfirmarQuedaActivado() throws Exception {
-        String email = crearCliente("primer.ingreso@correo.com");
+    void sinElCodigoNoSePuedeEntrarANingunaPagina() throws Exception {
+        String email = crearCliente("sin.codigo@correo.com");
         MockHttpSession sesion = iniciarSesion(email);
 
-        // sin el codigo no puede entrar a ninguna pagina
         mvc.perform(get("/").session(sesion)).andExpect(redirectedUrl("/verificacion"));
         mvc.perform(get("/mis-pedidos").session(sesion)).andExpect(redirectedUrl("/verificacion"));
-
         mvc.perform(get("/verificacion").session(sesion))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("data:image/png;base64,")));
+                .andExpect(content().string(not(containsString("data:image/png"))));
+    }
 
-        String secreto = (String) sesion.getAttribute(VerificacionDosPasosFilter.SECRETO_NUEVO);
-        assertNotNull(secreto);
+    @Test
+    void unaCuentaSinClaveDeAuthenticatorNoPuedeVincularUnCelular() throws Exception {
+        // cuenta antigua sin clave: quien sepa la contraseña NO puede escanear un QR nuevo
+        Usuario u = new Usuario();
+        u.setRol(rolRepository.findByNombre(Rol.CLIENTE).orElseThrow());
+        u.setNombre("Sin");
+        u.setApellido("Clave");
+        u.setEmail("sin.clave@correo.com");
+        u.setPassword(passwordEncoder.encode("Clave#12345"));
+        usuarioRepository.save(u);
 
-        mvc.perform(post("/verificacion").session(sesion).with(csrf()).param("codigo", Totp.codigoActual(secreto)))
-                .andExpect(redirectedUrl("/"));
-
-        assertEquals(secreto, usuarioRepository.findByEmail(email).orElseThrow().getTotpSecreto());
-        mvc.perform(get("/mis-pedidos").session(sesion)).andExpect(status().isOk());
+        MockHttpSession sesion = iniciarSesion("sin.clave@correo.com");
+        mvc.perform(get("/verificacion").session(sesion))
+                .andExpect(redirectedUrl("/login?sinClave"));
+        assertNull(usuarioRepository.findByEmail("sin.clave@correo.com").orElseThrow().getTotpSecreto());
     }
 
     @Test
     void siguientesIngresosSoloPidenElCodigo() throws Exception {
         String email = crearCliente("ya.configurado@correo.com");
-        String secreto = Totp.generarSecreto();
-        usuarioService.activarDosPasos(usuarioRepository.findByEmail(email).orElseThrow().getId(), secreto);
+        String secreto = usuarioRepository.findByEmail(email).orElseThrow().getTotpSecreto();
 
         MockHttpSession sesion = iniciarSesion(email);
         mvc.perform(get("/verificacion").session(sesion))
@@ -91,17 +106,16 @@ class VerificacionTest {
     }
 
     @Test
-    void elAdministradorVaAlPanelDespuesDelCodigo() throws Exception {
+    void elAdministradorDebeCambiarSuClaveDespuesDelCodigo() throws Exception {
         MockHttpSession sesion = iniciarSesion("admin@pieroalonso.pe", "Admin12345");
         mvc.perform(get("/admin/productos").session(sesion)).andExpect(redirectedUrl("/verificacion"));
         mvc.perform(get("/verificacion").session(sesion));
 
+        // el administrador ya nace con su propia clave de Authenticator
         String secreto = usuarioRepository.findByEmail("admin@pieroalonso.pe").orElseThrow().getTotpSecreto();
-        if (secreto == null) {
-            secreto = (String) sesion.getAttribute(VerificacionDosPasosFilter.SECRETO_NUEVO);
-        }
+        assertNotNull(secreto);
         mvc.perform(post("/verificacion").session(sesion).with(csrf()).param("codigo", Totp.codigoActual(secreto)))
-                .andExpect(redirectedUrl("/admin/productos"));
+                .andExpect(redirectedUrl("/cambiar-clave"));
     }
 
     @Test
@@ -124,16 +138,16 @@ class VerificacionTest {
             form.setNombre("Ana");
             form.setApellido("Torres");
             form.setEmail(email);
-            form.setPassword("clave12345");
-            form.setConfirmarPassword("clave12345");
+            form.setPassword("Clave#12345");
+            form.setConfirmarPassword("Clave#12345");
             form.setAceptaTerminos(true);
-            usuarioService.registrarCliente(form);
+            usuarioService.registrarCliente(form, Totp.generarSecreto());
         }
         return email;
     }
 
     private MockHttpSession iniciarSesion(String email) throws Exception {
-        return iniciarSesion(email, "clave12345");
+        return iniciarSesion(email, "Clave#12345");
     }
 
     private MockHttpSession iniciarSesion(String email, String password) throws Exception {

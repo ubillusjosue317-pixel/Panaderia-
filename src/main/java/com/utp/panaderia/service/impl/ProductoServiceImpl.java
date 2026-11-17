@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.utp.panaderia.dto.ProductoForm;
 import com.utp.panaderia.model.Producto;
 import com.utp.panaderia.repository.ProductoRepository;
+import com.utp.panaderia.service.AuditoriaService;
 import com.utp.panaderia.service.CategoriaService;
 import com.utp.panaderia.service.ProductoService;
 
@@ -25,6 +26,9 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Autowired
     private CategoriaService categoriaService;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     @Override
     public List<Producto> listarDisponibles(Integer idCategoria, String texto) {
@@ -60,11 +64,16 @@ public class ProductoServiceImpl implements ProductoService {
     @Transactional
     public Producto guardar(ProductoForm form) {
         Producto producto;
+        String cambios;
         if (form.getId() == null) {
             producto = new Producto();
+            cambios = "precio=" + form.getPrecio() + ", disponible=" + form.isDisponible();
         } else {
             producto = buscarPorId(form.getId());
+            cambios = "precio " + producto.getPrecio() + " -> " + form.getPrecio()
+                    + ", disponible " + producto.isDisponible() + " -> " + form.isDisponible();
         }
+        boolean esNuevo = form.getId() == null;
 
         producto.setCategoria(categoriaService.buscarPorId(form.getIdCategoria()));
         producto.setNombre(form.getNombre().trim());
@@ -73,7 +82,10 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setImagenUrl(vacioANull(form.getImagenUrl()));
         producto.setDisponible(form.isDisponible());
 
-        return productoRepository.save(producto);
+        Producto guardado = productoRepository.save(producto);
+        auditoriaService.registrar(esNuevo ? "CREAR" : "EDITAR", "Producto", guardado.getId(),
+                guardado.getNombre() + ": " + cambios);
+        return guardado;
     }
 
     // No borramos productos porque pueden estar en pedidos anteriores,
@@ -83,7 +95,10 @@ public class ProductoServiceImpl implements ProductoService {
     public Producto cambiarDisponibilidad(Integer id) {
         Producto producto = buscarPorId(id);
         producto.setDisponible(!producto.isDisponible());
-        return productoRepository.save(producto);
+        Producto guardado = productoRepository.save(producto);
+        auditoriaService.registrar("DISPONIBILIDAD", "Producto", id,
+                guardado.getNombre() + ": disponible " + !guardado.isDisponible() + " -> " + guardado.isDisponible());
+        return guardado;
     }
 
     // Cambio rapido desde la tabla de productos.
@@ -91,15 +106,19 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional
     public Producto actualizarPrecio(Integer id, BigDecimal precio) {
-        if (precio == null || precio.signum() < 0) {
-            throw new IllegalArgumentException("El precio no puede estar vacío ni ser negativo.");
+        if (precio == null || precio.compareTo(new BigDecimal("0.01")) < 0) {
+            throw new IllegalArgumentException("El precio mínimo es S/ 0.01.");
         }
         if (precio.scale() > 2 || precio.compareTo(new BigDecimal("999999.99")) > 0) {
             throw new IllegalArgumentException("Formato de precio no válido.");
         }
         Producto producto = buscarPorId(id);
+        BigDecimal anterior = producto.getPrecio();
         producto.setPrecio(precio);
-        return productoRepository.save(producto);
+        Producto guardado = productoRepository.save(producto);
+        auditoriaService.registrar("PRECIO", "Producto", id,
+                guardado.getNombre() + ": precio " + anterior + " -> " + precio);
+        return guardado;
     }
 
     private String vacioANull(String valor) {

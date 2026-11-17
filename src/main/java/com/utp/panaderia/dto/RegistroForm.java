@@ -1,5 +1,7 @@
 package com.utp.panaderia.dto;
 
+import com.utp.panaderia.validation.ClaveSegura;
+
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -29,6 +31,7 @@ public class RegistroForm {
 
     @NotBlank(message = "Ingresa una contraseña")
     @Size(min = 8, max = 60, message = "Debe tener entre 8 y 60 caracteres")
+    @ClaveSegura
     private String password;
 
     @NotBlank(message = "Confirma tu contraseña")

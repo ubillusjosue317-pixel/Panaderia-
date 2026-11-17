@@ -55,7 +55,7 @@
                             <form th:action="@{/admin/productos/{id}/precio(id=${p.id})}" method="post"
                                   class="form-precio">
                                 <span>S/</span>
-                                <input type="number" name="precio" step="0.01" min="0" max="999999.99" required
+                                <input type="number" name="precio" step="0.01" min="0.01" max="999999.99" required
                                        class="form-control form-control-sm" th:value="${p.precio}"
                                        th:aria-label="'Precio de ' + ${p.nombre}">
                                 <button type="submit" class="btn btn-sm btn-outline-secondary" title="Guardar precio">

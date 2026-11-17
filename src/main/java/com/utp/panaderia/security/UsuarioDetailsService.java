@@ -14,10 +14,14 @@ public class UsuarioDetailsService implements UserDetailsService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private BloqueoIntentos bloqueo;
+
     @Override
     public UserDetails loadUserByUsername(String email) {
+        boolean bloqueada = bloqueo.estaBloqueado(email);
         return usuarioRepository.findByEmail(email.trim().toLowerCase())
-                .map(UsuarioAutenticado::new)
+                .map(u -> new UsuarioAutenticado(u, bloqueada))
                 .orElseThrow(() -> new UsernameNotFoundException("No existe una cuenta con ese correo"));
     }
 }
