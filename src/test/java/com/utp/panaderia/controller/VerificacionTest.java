@@ -106,16 +106,25 @@ class VerificacionTest {
     }
 
     @Test
-    void elAdministradorDebeCambiarSuClaveDespuesDelCodigo() throws Exception {
+    void elAdministradorVinculaSuAuthenticatorEnLaPaginaYLuegoCambiaSuClave() throws Exception {
         MockHttpSession sesion = iniciarSesion("admin@pieroalonso.pe", "Admin12345");
         mvc.perform(get("/admin/productos").session(sesion)).andExpect(redirectedUrl("/verificacion"));
-        mvc.perform(get("/verificacion").session(sesion));
 
-        // el administrador ya nace con su propia clave de Authenticator
+        // primer ingreso: la pagina le muestra el QR (no hace falta la consola)
+        mvc.perform(get("/verificacion").session(sesion))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data:image/png;base64,")));
+
         String secreto = usuarioRepository.findByEmail("admin@pieroalonso.pe").orElseThrow().getTotpSecreto();
         assertNotNull(secreto);
         mvc.perform(post("/verificacion").session(sesion).with(csrf()).param("codigo", Totp.codigoActual(secreto)))
                 .andExpect(redirectedUrl("/cambiar-clave"));
+
+        // ya confirmado: el QR no se vuelve a mostrar
+        assertTrue(usuarioRepository.findByEmail("admin@pieroalonso.pe").orElseThrow().isTotpConfirmado());
+        MockHttpSession otra = iniciarSesion("admin@pieroalonso.pe", "Admin12345");
+        mvc.perform(get("/verificacion").session(otra))
+                .andExpect(content().string(not(containsString("data:image/png"))));
     }
 
     @Test

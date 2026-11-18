@@ -35,6 +35,9 @@ public class DatosIniciales implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DatosIniciales.class);
 
+    // clave que traian las versiones anteriores del proyecto
+    private static final String CLAVE_ANTIGUA = "Admin12345";
+
     @Autowired
     private RolRepository rolRepository;
 
@@ -103,12 +106,25 @@ public class DatosIniciales implements CommandLineRunner {
     private void crearAdministrador() {
         var existente = usuarioRepository.findByEmail(adminEmail);
         if (existente.isPresent()) {
-            // un administrador sin clave de 2 pasos recibe una nueva (se muestra solo en la consola)
             Usuario admin = existente.get();
+            // base creada con la version anterior: el administrador seguia con la clave publica
+            // "Admin12345" (y quizas con un Authenticator vinculado por cualquiera). Se reemplaza todo.
+            if (passwordEncoder.matches(CLAVE_ANTIGUA, admin.getPassword())) {
+                String temporal = claveAleatoria();
+                admin.setPassword(passwordEncoder.encode(temporal));
+                admin.setTotpSecreto(Totp.generarSecreto());
+                admin.setDebeCambiarPassword(true);
+                admin.setTotpConfirmado(false);
+                usuarioRepository.save(admin);
+                log.warn("El administrador usaba la clave por defecto antigua. Se reemplazo. "
+                        + "Clave temporal (solo se muestra ahora): {}", temporal);
+                return;
+            }
+            // un administrador sin clave de 2 pasos recibe una nueva (se muestra solo en la consola)
             if (admin.getTotpSecreto() == null) {
                 admin.setTotpSecreto(Totp.generarSecreto());
+                admin.setTotpConfirmado(false);
                 usuarioRepository.save(admin);
-                mostrarClaveDosPasos(admin);
             }
             return;
         }
@@ -121,29 +137,26 @@ public class DatosIniciales implements CommandLineRunner {
         boolean generada = clave == null || clave.isBlank();
         if (generada) {
             // no hay clave por defecto: se genera una aleatoria y se muestra solo esta vez
-            byte[] bytes = new byte[12];
-            new SecureRandom().nextBytes(bytes);
-            clave = "Adm1n-" + Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+            clave = claveAleatoria();
         }
         admin.setPassword(passwordEncoder.encode(clave));
         // el administrador tiene su propia clave de Authenticator desde que se crea la cuenta
         admin.setTotpSecreto(Totp.generarSecreto());
         // la clave inicial (aunque venga de ADMIN_PASSWORD) se reemplaza en el primer ingreso
         admin.setDebeCambiarPassword(true);
+        // el QR se le muestra en la pagina, en su primer inicio de sesion (no hace falta la consola)
+        admin.setTotpConfirmado(false);
         usuarioRepository.save(admin);
         log.info("Usuario administrador creado: {}", adminEmail);
         if (generada) {
             log.warn("ADMIN_PASSWORD no estaba definida. Clave temporal del administrador (solo se muestra ahora): {}", clave);
         }
-        mostrarClaveDosPasos(admin);
     }
 
-    // Se muestra una sola vez, en la consola de quien arranca la app: esa persona la agrega a su
-    // Authenticator (Agregar cuenta > Ingresar clave de configuracion).
-    private void mostrarClaveDosPasos(Usuario admin) {
-        log.warn("VERIFICACION EN 2 PASOS DEL ADMINISTRADOR (solo se muestra ahora). En Google/Microsoft Authenticator "
-                + "elige 'Ingresar clave de configuracion' con cuenta {} y clave: {}",
-                admin.getEmail(), admin.getTotpSecreto());
+    private String claveAleatoria() {
+        byte[] bytes = new byte[12];
+        new SecureRandom().nextBytes(bytes);
+        return "Adm1n-" + Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private void crearProductosDeEjemplo() {

@@ -26,6 +26,7 @@ CREATE TABLE usuario (
     password        VARCHAR(255) NOT NULL,
     totp_secreto    VARCHAR(32),
     debe_cambiar_password BOOLEAN NOT NULL DEFAULT FALSE,
+    totp_confirmado BOOLEAN NOT NULL DEFAULT TRUE,
     fecha_registro  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol) REFERENCES rol (id_rol)
 );

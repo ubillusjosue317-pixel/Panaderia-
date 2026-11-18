@@ -41,6 +41,11 @@ public class Usuario {
     @Column(name = "totp_secreto", length = 32)
     private String totpSecreto;
 
+    // false solo para el administrador recien creado: mientras no escriba su primer codigo,
+    // la pantalla de verificacion le muestra el QR para vincular su Authenticator
+    @Column(name = "totp_confirmado", nullable = false, columnDefinition = "boolean default true")
+    private boolean totpConfirmado = true;
+
     // true cuando la persona debe reemplazar su contraseña antes de usar el sistema (admin recien creado)
     @Column(name = "debe_cambiar_password", nullable = false, columnDefinition = "boolean default false")
     private boolean debeCambiarPassword;

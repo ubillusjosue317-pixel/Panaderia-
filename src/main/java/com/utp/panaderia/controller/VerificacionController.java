@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.utp.panaderia.model.Usuario;
 import com.utp.panaderia.security.UsuarioAutenticado;
 import com.utp.panaderia.service.UsuarioService;
+import com.utp.panaderia.util.CodigoQr;
 import com.utp.panaderia.util.Totp;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,10 +27,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 // Segundo paso del inicio de sesion (obligatorio para todos).
-// El QR se escanea al registrarse (o al crear el administrador); aqui solo se pide el codigo.
+// El QR se escanea al registrarse; el administrador lo ve aqui solo hasta confirmar su primer codigo.
 @Controller
 public class VerificacionController {
 
+    private static final String EMISOR = "Panadería Piero Alonso";
     private static final int MAX_INTENTOS = 5;
 
     @Autowired
@@ -36,7 +39,7 @@ public class VerificacionController {
 
     @GetMapping("/verificacion")
     public String formulario(@AuthenticationPrincipal UsuarioAutenticado autenticado, HttpSession sesion,
-                             HttpServletRequest request, HttpServletResponse response) {
+                             HttpServletRequest request, HttpServletResponse response, Model model) {
         if (sesion.getAttribute(PENDIENTE) == null) {
             return "redirect:/";
         }
@@ -44,6 +47,12 @@ public class VerificacionController {
         Usuario usuario = usuarioService.buscarPorId(autenticado.getId());
         if (usuario.getTotpSecreto() == null) {
             return sinClave(request, response);
+        }
+        if (!usuario.isTotpConfirmado()) {
+            // administrador recien creado: aun no vincula su Authenticator, se le muestra el QR
+            model.addAttribute("qr", CodigoQr.comoImagen(
+                    Totp.enlaceQr(EMISOR, usuario.getEmail(), usuario.getTotpSecreto()), 220));
+            model.addAttribute("secreto", usuario.getTotpSecreto().replaceAll("(.{4})(?!$)", "$1 "));
         }
         return "auth/verificacion";
     }
@@ -64,6 +73,9 @@ public class VerificacionController {
         }
 
         if (Totp.esValido(usuario.getTotpSecreto(), codigo.replaceAll("\s", ""))) {
+            if (!usuario.isTotpConfirmado()) {
+                usuarioService.confirmarDosPasos(usuario.getId());
+            }
             String destino = (String) sesion.getAttribute(DESTINO);
             sesion.removeAttribute(PENDIENTE);
             if (usuario.isDebeCambiarPassword()) {

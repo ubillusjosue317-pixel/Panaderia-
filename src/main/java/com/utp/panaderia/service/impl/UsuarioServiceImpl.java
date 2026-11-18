@@ -83,6 +83,14 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
+    public void confirmarDosPasos(Integer idUsuario) {
+        Usuario usuario = buscarPorId(idUsuario);
+        usuario.setTotpConfirmado(true);
+        usuarioRepository.save(usuario);
+    }
+
+    @Override
+    @Transactional
     public void cambiarPassword(Integer idUsuario, String actual, String nueva) {
         Usuario usuario = buscarPorId(idUsuario);
         if (!passwordEncoder.matches(actual, usuario.getPassword())) {

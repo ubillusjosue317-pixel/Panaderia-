@@ -15,6 +15,9 @@ public interface UsuarioService {
 
     String cifrarPassword(String password);
 
+    // Marca que el usuario ya escribio un codigo valido de su Authenticator
+    void confirmarDosPasos(Integer idUsuario);
+
     // Cambia la contraseña (pide la actual) y quita la obligacion de cambiarla
     void cambiarPassword(Integer idUsuario, String actual, String nueva);
 

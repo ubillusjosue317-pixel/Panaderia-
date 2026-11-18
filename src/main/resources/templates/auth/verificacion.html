@@ -18,7 +18,17 @@
 
         <h1 class="titulo-pagina">Verificación en 2 pasos</h1>
 
-        <p class="texto-gris">Abre tu app autenticadora y escribe el código de 6 dígitos
+        <!-- Solo el administrador recien creado: vincular el Authenticator con su primer inicio de sesion -->
+        <th:block th:if="${qr}">
+            <p class="texto-gris">Para proteger tu cuenta, escanea este código con
+                <b>Google Authenticator</b> o <b>Microsoft Authenticator</b> desde tu celular.</p>
+            <div class="qr-dos-pasos">
+                <img th:src="${qr}" alt="Código QR para la app autenticadora" width="220" height="220">
+                <small>¿No puedes escanearlo? Ingresa esta clave en la app:</small>
+                <code th:text="${secreto}">ABCD EFGH</code>
+            </div>
+        </th:block>
+        <p class="texto-gris" th:unless="${qr}">Abre tu app autenticadora y escribe el código de 6 dígitos
             de <b>Panadería Piero Alonso</b>.</p>
 
         <form th:action="@{/verificacion}" method="post" class="form-auth">

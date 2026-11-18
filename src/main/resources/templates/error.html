@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Página no disponible')}"></head>
+<body class="pagina-auth movil-login">
+
+<div class="auth-imagen"></div>
+
+<div class="auth-panel">
+    <div class="auth-cuerpo">
+        <h1 class="titulo-pagina">No pudimos mostrar esta página</h1>
+        <p class="texto-gris">Puede que el enlace ya no exista o que haya ocurrido un problema. Intenta volver al inicio.</p>
+        <a th:href="@{/}" class="boton-guinda">VOLVER AL INICIO <i class="bi bi-arrow-right"></i></a>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

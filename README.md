@@ -104,17 +104,18 @@ Para apagarlo: `Ctrl + C` en la ventana de PowerShell.
 ### Verificación en 2 pasos
 
 Cada cuenta (clientes y administrador) tiene **su propia clave** de **Google Authenticator** o
-**Microsoft Authenticator**, y se vincula cuando la cuenta se crea, no en el primer inicio de sesión:
+**Microsoft Authenticator**, y se vincula al crear la cuenta (clientes) o en el primer inicio de sesión con la contraseña temporal (administrador):
 
 - **Clientes:** al registrarse, después de llenar el formulario aparece el QR. Se escanea, se escribe
   el código de 6 dígitos y recién ahí se crea la cuenta.
-- **Administrador:** al crearse (primer arranque), la consola muestra una sola vez su clave. En la app:
-  *Agregar cuenta > Ingresar clave de configuración*, con el correo del administrador y esa clave.
+- **Administrador:** se crea al arrancar la app por primera vez, con una contraseña temporal que sale una sola
+  vez en la consola. En su **primer inicio de sesión** la pantalla de verificación le muestra el QR; lo escanea,
+  escribe el primer código y desde ahí el QR ya no se vuelve a mostrar. Luego debe cambiar la contraseña.
 - En cada inicio de sesión se pide la contraseña y luego el código. Si fallas 5 veces, hay que volver a empezar.
 - Una cuenta sin clave de Authenticator no puede entrar.
 
 **Empezar de cero:** `database/reiniciar_cuentas.sql` borra todas las cuentas (y sus pedidos y mensajes).
-Al reiniciar la app se crea de nuevo el administrador con clave y Authenticator nuevos.
+Al reiniciar la app se crea de nuevo el administrador con una contraseña temporal nueva.
 
 ### Medidas de seguridad
 

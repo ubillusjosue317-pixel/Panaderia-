@@ -82,6 +82,17 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // Los archivos que el navegador pide solo (sw.js, favicon.ico, mapas...) no son una pagina
+    // a la que el usuario queria ir: no se usan como destino despues de iniciar sesion.
+    private boolean esPagina(String url) {
+        try {
+            String ruta = java.net.URI.create(url).getPath();
+            return ruta != null && !ruta.matches(".*\\.[A-Za-z0-9]{1,5}$");
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -102,7 +113,7 @@ public class SecurityConfig {
             String destino = "/";
             if (esAdmin) {
                 destino = "/admin/productos";
-            } else if (guardada != null) {
+            } else if (guardada != null && esPagina(guardada.getRedirectUrl())) {
                 destino = guardada.getRedirectUrl();
             }
 

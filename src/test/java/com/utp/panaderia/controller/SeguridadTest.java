@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.utp.panaderia.dto.RegistroPendiente;
 import com.utp.panaderia.repository.AuditoriaRepository;
+import com.utp.panaderia.repository.UsuarioRepository;
 import com.utp.panaderia.repository.ProductoRepository;
 import com.utp.panaderia.session.Carrito;
 import com.utp.panaderia.util.Totp;
@@ -42,6 +43,9 @@ class SeguridadTest {
 
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Test
     void tras5FallosLaCuentaSeBloqueaAunConLaClaveCorrecta() throws Exception {
@@ -170,6 +174,28 @@ class SeguridadTest {
                         .param("password", "Admin#12345").param("confirmarPassword", "Admin#12345")
                         .param("aceptaTerminos", "true"))
                 .andExpect(content().string(containsString("muy común")));
+    }
+
+    @Test
+    void unArchivoQueElNavegadorPideSoloNoEsElDestinoDespuesDelLogin() throws Exception {
+        String email = "destino.archivo@correo.com";
+        registrar(email);
+        String secreto = usuarioRepository.findByEmail(email).orElseThrow().getTotpSecreto();
+
+        MockHttpSession sesion = new MockHttpSession();
+        mvc.perform(get("/sw.js").session(sesion)).andExpect(status().is3xxRedirection());
+        mvc.perform(post("/login").session(sesion).with(csrf())
+                        .param("email", email).param("password", "Clave#12345"))
+                .andExpect(redirectedUrl("/verificacion"));
+        mvc.perform(post("/verificacion").session(sesion).with(csrf()).param("codigo", Totp.codigoActual(secreto)))
+                .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    void laPaginaDeErrorNoMuestraDetallesTecnicos() throws Exception {
+        String html = mvc.perform(get("/no-existe-esta-pagina")).andReturn().getResponse().getContentAsString();
+        assertFalse(html.contains("org.springframework"));
+        assertFalse(html.contains("Whitelabel"));
     }
 
     private void registrar(String email) throws Exception {
