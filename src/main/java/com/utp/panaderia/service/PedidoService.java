@@ -34,4 +34,8 @@ public interface PedidoService {
     long contarPendientes();
 
     Pedido cambiarEstado(Integer idPedido, Integer idEstado);
+
+    // Elimina un pedido. Solo se permite con pedidos CANCELADOS (su stock ya fue devuelto); los demas
+    // son ventas reales o pedidos en curso y no se borran. Queda registrado en la auditoria.
+    void eliminar(Integer idPedido);
 }

@@ -5,6 +5,7 @@
 <head th:fragment="head(titulo)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" th:href="@{/img/favicon.png}">
     <title th:text="${titulo} + ' | Panadería Piero Alonso'">Panadería Piero Alonso</title>
     <!-- fuentes alojadas en el propio sitio: la pagina no pide nada a Google -->
     <link th:href="@{/vendor/fonts/fuentes.css}" rel="stylesheet">
@@ -21,9 +22,8 @@
 <!-- Menu lateral (escritorio) y barra inferior (celular). "activa" indica que opcion se pinta -->
 <th:block th:fragment="menu(activa)">
 <aside class="menu-lateral">
-    <a class="marca" th:href="@{/}">
-        <span class="marca-icono"><i class="bi bi-basket2-fill"></i></span>
-        <span><small>PANADERÍA</small><b>Piero Alonso</b></span>
+    <a class="marca" th:href="@{/}" aria-label="Panadería Piero Alonso, ir al inicio">
+        <img class="logo-marca" th:src="@{/img/logo-piero-alonso.png}" alt="Panadería Piero Alonso" width="720" height="192">
     </a>
 
     <!-- El administrador no compra: solo ve sus ventanas de gestion -->

@@ -49,6 +49,17 @@
                     </select>
                     <button type="submit" class="btn btn-sm btn-guinda">Cambiar</button>
                 </form>
+                <!-- solo los pedidos cancelados se pueden eliminar -->
+                <form th:if="${pedido.estado.nombre == 'Cancelado'}"
+                      th:action="@{/admin/pedidos/{id}/eliminar(id=${pedido.id})}" method="post" class="m-0"
+                      onsubmit="return confirm('¿Eliminar definitivamente el pedido #' + this.dataset.pedido + '? Esta acción no se puede deshacer.');"
+                      th:attr="data-pedido=${pedido.id}">
+                    <input type="hidden" name="filtro" th:if="${estadoActual != null}" th:value="${estadoActual}">
+                    <button type="submit" class="btn btn-sm btn-cancelar" title="Eliminar pedido"
+                            th:aria-label="'Eliminar el pedido ' + ${pedido.id}">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </form>
             </div>
 
             <p class="small mt-2 mb-1">

@@ -22,6 +22,7 @@ import com.utp.panaderia.repository.PedidoRepository;
 import com.utp.panaderia.repository.ProductoRepository;
 import com.utp.panaderia.repository.UsuarioRepository;
 import com.utp.panaderia.service.AuditoriaService;
+import com.utp.panaderia.service.ComprobanteService;
 import com.utp.panaderia.service.PedidoService;
 import com.utp.panaderia.session.Carrito;
 
@@ -42,6 +43,9 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Autowired
     private AuditoriaService auditoriaService;
+
+    @Autowired
+    private ComprobanteService comprobanteService;
 
     @Override
     @Transactional
@@ -159,6 +163,25 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public long contarPendientes() {
         return pedidoRepository.countByEstadoNombre(EstadoPedido.PENDIENTE);
+    }
+
+    @Override
+    @Transactional
+    public void eliminar(Integer idPedido) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new IllegalArgumentException("No encontramos ese pedido."));
+        if (!EstadoPedido.CANCELADO.equals(pedido.getEstado().getNombre())) {
+            throw new IllegalArgumentException("Solo se pueden eliminar los pedidos cancelados. "
+                    + "Cambia primero el estado a Cancelado si de verdad quieres quitarlo.");
+        }
+        // se anota antes de borrar: despues ya no habria datos que mostrar
+        auditoriaService.registrar("ELIMINAR", "Pedido", idPedido,
+                "Pedido eliminado: cliente " + pedido.getUsuario().getEmail() + ", S/ " + pedido.getTotal()
+                        + ", fecha " + pedido.getFechaPedido());
+        String comprobante = pedido.getComprobante();
+        pedidoRepository.delete(pedido);
+        pedidoRepository.flush();
+        comprobanteService.eliminarArchivo(comprobante);
     }
 
     // Un pedido cancelado devuelve sus unidades al stock

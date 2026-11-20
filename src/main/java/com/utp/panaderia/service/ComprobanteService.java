@@ -12,6 +12,9 @@ public interface ComprobanteService {
     // Valida el archivo (extension, tipo real, tamaño) y lo guarda con nombre aleatorio
     void guardar(Integer idUsuario, Integer idPedido, MultipartFile archivo);
 
+    // Borra del disco el archivo de un comprobante (si existe); no falla si ya no esta
+    void eliminarArchivo(String nombreGuardado);
+
     // Solo el dueño del pedido o un administrador pueden verlo
     Archivo obtener(Integer idUsuario, boolean esAdmin, Integer idPedido);
 }

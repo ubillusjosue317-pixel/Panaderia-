@@ -105,6 +105,18 @@ public class ComprobanteServiceImpl implements ComprobanteService {
     }
 
     @Override
+    public void eliminarArchivo(String nombreGuardado) {
+        if (nombreGuardado == null) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(resolver(nombreGuardado));
+        } catch (IOException | IllegalArgumentException e) {
+            // si el archivo ya no estaba, no hay nada que borrar
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Archivo obtener(Integer idUsuario, boolean esAdmin, Integer idPedido) {
         Pedido pedido = pedidoRepository.findById(idPedido)

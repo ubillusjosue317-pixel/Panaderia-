@@ -155,6 +155,23 @@ class SeguridadTest {
     }
 
     @Test
+    void elLogoDePieroAlonsoSeMuestraYSeSirve() throws Exception {
+        // pantallas de acceso (fondo vino): logo con texto claro
+        for (String pagina : new String[] { "/login", "/recuperar", "/registro" }) {
+            mvc.perform(get(pagina))
+                    .andExpect(content().string(containsString("/img/logo-piero-alonso-claro.png")))
+                    .andExpect(content().string(containsString("/img/favicon.png")));
+        }
+        // menu lateral (fondo blanco): logo normal
+        mvc.perform(get("/"))
+                .andExpect(content().string(containsString("/img/logo-piero-alonso.png")))
+                .andExpect(content().string(containsString("/img/favicon.png")));
+        for (String imagen : new String[] { "logo-piero-alonso.png", "logo-piero-alonso-claro.png", "favicon.png" }) {
+            mvc.perform(get("/img/" + imagen)).andExpect(status().isOk());
+        }
+    }
+
+    @Test
     void laCspYaNoPermiteElCdn() throws Exception {
         mvc.perform(get("/login"))
                 .andExpect(header().string("Content-Security-Policy", not(containsString("jsdelivr"))))

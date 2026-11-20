@@ -518,6 +518,11 @@
         font-size: 0;
     }
 
+    /* logo de las pantallas de acceso en celular */
+    .marca-logo img {
+        height: 40px;
+    }
+
     .marca-movil {
         font-size: 12px;
         font-weight: 500;
@@ -636,6 +641,7 @@
 
     .movil-registro .auth-imagen,
     .movil-registro .marca,
+    .movil-registro .marca-logo,
     .movil-registro .auth-cerrar,
     .movil-registro .antetitulo {
         display: none;

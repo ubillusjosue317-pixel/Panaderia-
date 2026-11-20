@@ -1620,3 +1620,27 @@ h1, h2, h3 {
 .enlace-producto:hover {
     text-decoration: underline;
 }
+
+/* ================= Logo ================= */
+
+/* menu lateral (fondo blanco): el logo completo, ajustado al ancho del menu */
+.logo-marca {
+    display: block;
+    width: 100%;
+    max-width: 202px;
+    height: auto;
+}
+
+/* pantallas de acceso (panel vino): version del logo con el texto en crema, directo sobre el fondo */
+.marca-logo {
+    display: inline-block;
+    line-height: 0;
+}
+
+.marca-logo img {
+    display: block;
+    height: 58px;
+    width: auto;
+    /* una sombra suave separa el emblema oscuro del fondo vino */
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .35));
+}

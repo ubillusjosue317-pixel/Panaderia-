@@ -47,4 +47,19 @@ public class PedidoAdminController {
         }
         return "redirect:/admin/pedidos";
     }
+
+    @PostMapping("/{id}/eliminar")
+    public String eliminar(@PathVariable Integer id, @RequestParam(required = false) Integer filtro,
+                           RedirectAttributes redirect) {
+        try {
+            pedidoService.eliminar(id);
+            redirect.addFlashAttribute("mensaje", "El pedido #" + id + " fue eliminado.");
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        if (filtro != null) {
+            redirect.addAttribute("estado", filtro);
+        }
+        return "redirect:/admin/pedidos";
+    }
 }
