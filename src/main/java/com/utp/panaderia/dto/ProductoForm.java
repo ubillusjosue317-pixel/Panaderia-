@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -35,6 +37,11 @@ public class ProductoForm {
     @Pattern(regexp = "^$|^/(img|uploads)/[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*\\.(jpg|jpeg|png|webp|svg)$",
             message = "La imagen debe subirse desde tu equipo; no se aceptan enlaces externos")
     private String imagenUrl;
+
+    @NotNull(message = "Ingresa el stock")
+    @Min(value = 0, message = "El stock no puede ser negativo")
+    @Max(value = 99999, message = "El stock máximo es 99999")
+    private Integer stock = 50;
 
     private boolean disponible = true;
 }

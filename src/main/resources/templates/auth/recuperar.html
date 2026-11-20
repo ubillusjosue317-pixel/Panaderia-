@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Recuperar contraseña')}"></head>
+<body class="pagina-auth movil-login">
+
+<div class="auth-imagen">
+    <a th:href="@{/login}"><i class="bi bi-arrow-left"></i> Volver al inicio de sesión</a>
+</div>
+
+<div class="auth-panel">
+    <div class="auth-cabecera">
+        <a th:href="@{/}" class="marca">
+            <span class="marca-icono"><i class="bi bi-basket2-fill"></i></span>
+            <span class="marca-movil">Panadería Piero Alonso</span>
+        </a>
+    </div>
+
+    <div class="auth-cuerpo">
+        <div th:if="${error}" class="aviso error" th:text="${error}"></div>
+
+        <h1 class="titulo-pagina">¿Olvidaste tu contraseña?</h1>
+        <p class="texto-gris">Escribe tu correo y, si está registrado, te enviaremos un enlace para elegir una
+            contraseña nueva. El enlace vence en 30 minutos y solo se puede usar una vez.</p>
+
+        <form th:action="@{/recuperar}" method="post" class="form-auth">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <input type="email" id="email" name="email" class="form-control" maxlength="100"
+                   placeholder="usuario@correo.com" required autofocus autocomplete="email">
+            <button type="submit" class="boton-guinda">ENVIAR ENLACE <i class="bi bi-envelope"></i></button>
+        </form>
+
+        <p class="auth-cambiar auth-pie"><a th:href="@{/login}">Volver al inicio de sesión</a></p>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Nueva contraseña')}"></head>
+<body class="pagina-auth movil-login">
+
+<div class="auth-imagen">
+    <a th:href="@{/login}"><i class="bi bi-arrow-left"></i> Cancelar</a>
+</div>
+
+<div class="auth-panel">
+    <div class="auth-cabecera">
+        <a th:href="@{/}" class="marca">
+            <span class="marca-icono"><i class="bi bi-basket2-fill"></i></span>
+            <span class="marca-movil">Panadería Piero Alonso</span>
+        </a>
+    </div>
+
+    <div class="auth-cuerpo">
+        <h1 class="titulo-pagina">Elige tu nueva contraseña</h1>
+        <p class="texto-gris">Debe tener al menos 8 caracteres, con mayúscula, minúscula, número y símbolo.
+            Seguirás necesitando el código de tu app autenticadora para entrar.</p>
+
+        <form th:action="@{/recuperar/restablecer}" th:object="${restablecer}" method="post" class="form-auth" novalidate>
+            <label for="nueva" class="form-label">Contraseña nueva</label>
+            <input type="password" id="nueva" th:field="*{nueva}" class="form-control" th:errorclass="is-invalid"
+                   autocomplete="new-password" required autofocus>
+            <div class="invalid-feedback" th:errors="*{nueva}"></div>
+
+            <label for="confirmar" class="form-label">Confirmar contraseña nueva</label>
+            <input type="password" id="confirmar" th:field="*{confirmar}" class="form-control"
+                   th:errorclass="is-invalid" autocomplete="new-password" required>
+            <div class="invalid-feedback" th:errors="*{confirmar}"></div>
+
+            <button type="submit" class="boton-guinda">GUARDAR CONTRASEÑA <i class="bi bi-shield-check"></i></button>
+        </form>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

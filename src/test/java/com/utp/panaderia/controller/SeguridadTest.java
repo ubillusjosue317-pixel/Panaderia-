@@ -142,6 +142,9 @@ class SeguridadTest {
     void bootstrapSeSirveDesdeElPropioSitioSinCdn() throws Exception {
         String html = mvc.perform(get("/login")).andReturn().getResponse().getContentAsString();
         assertFalse(html.contains("cdn.jsdelivr.net"));
+        assertFalse(html.contains("fonts.googleapis.com"));
+        assertFalse(html.contains("fonts.gstatic.com"));
+        mvc.perform(get("/vendor/fonts/fuentes.css")).andExpect(status().isOk());
         assertTrue(html.contains("/vendor/bootstrap/css/bootstrap.min.css"));
         assertTrue(html.contains("/vendor/bootstrap/js/bootstrap.bundle.min.js"));
 
@@ -154,7 +157,8 @@ class SeguridadTest {
     @Test
     void laCspYaNoPermiteElCdn() throws Exception {
         mvc.perform(get("/login"))
-                .andExpect(header().string("Content-Security-Policy", not(containsString("jsdelivr"))));
+                .andExpect(header().string("Content-Security-Policy", not(containsString("jsdelivr"))))
+                .andExpect(header().string("Content-Security-Policy", not(containsString("google"))));
     }
 
     @Test

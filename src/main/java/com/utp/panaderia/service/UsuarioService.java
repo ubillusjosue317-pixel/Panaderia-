@@ -1,5 +1,6 @@
 package com.utp.panaderia.service;
 
+import com.utp.panaderia.dto.PerfilForm;
 import com.utp.panaderia.dto.RegistroForm;
 import com.utp.panaderia.dto.RegistroPendiente;
 import com.utp.panaderia.model.Usuario;
@@ -14,6 +15,9 @@ public interface UsuarioService {
     Usuario crearCliente(RegistroPendiente pendiente);
 
     String cifrarPassword(String password);
+
+    // Solo cambia nombre, apellido y celular de ESE usuario (el correo y el rol no se tocan)
+    Usuario actualizarPerfil(Integer idUsuario, PerfilForm form);
 
     // Marca que el usuario ya escribio un codigo valido de su Authenticator
     void confirmarDosPasos(Integer idUsuario);

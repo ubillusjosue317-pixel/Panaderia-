@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.utp.panaderia.model.EstadoPedido;
+import com.utp.panaderia.model.MetodoPago;
 import com.utp.panaderia.model.Pedido;
 import com.utp.panaderia.model.Producto;
 import com.utp.panaderia.model.TipoEntrega;
@@ -45,7 +46,7 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     @Transactional
     public Pedido registrarPedido(Integer idUsuario, Map<Integer, Integer> items,
-                                  TipoEntrega tipoEntrega, String direccion) {
+                                  TipoEntrega tipoEntrega, String direccion, MetodoPago metodoPago) {
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Tu cesta está vacía.");
         }
@@ -59,6 +60,9 @@ public class PedidoServiceImpl implements PedidoService {
         if (tipoEntrega == TipoEntrega.DELIVERY && direccion.trim().length() > 200) {
             throw new IllegalArgumentException("La dirección no puede tener más de 200 caracteres.");
         }
+        if (tipoEntrega == TipoEntrega.DELIVERY && metodoPago == null) {
+            throw new IllegalArgumentException("Elige un método de pago para el delivery.");
+        }
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
@@ -71,6 +75,7 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setTipoEntrega(tipoEntrega);
         if (tipoEntrega == TipoEntrega.DELIVERY) {
             pedido.setDireccionEntrega(direccion.trim());
+            pedido.setMetodoPago(metodoPago);
         }
 
         // el precio se toma de la BD, no de lo que manda el navegador
@@ -84,6 +89,12 @@ public class PedidoServiceImpl implements PedidoService {
                 throw new IllegalArgumentException("Máximo " + Carrito.MAXIMO_POR_PRODUCTO
                         + " unidades por producto (" + producto.getNombre() + ").");
             }
+            // descuento atomico: si no alcanza el stock, se cancela todo el pedido (rollback)
+            if (productoRepository.descontarStock(producto.getId(), item.getValue()) == 0) {
+                throw new IllegalArgumentException("No hay stock suficiente de " + producto.getNombre()
+                        + " (quedan " + Math.max(0, productoRepository.findById(producto.getId())
+                                .map(Producto::getStock).orElse(0)) + ").");
+            }
             pedido.agregarDetalle(producto, item.getValue());
         }
 
@@ -94,6 +105,35 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional(readOnly = true)
     public List<Pedido> listarPorUsuario(Integer idUsuario) {
         return pedidoRepository.listarConDetalles(idUsuario);
+    }
+
+    @Override
+    @Transactional
+    public Pedido cancelarPropio(Integer idUsuario, Integer idPedido) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .filter(p -> p.getUsuario().getId().equals(idUsuario))
+                .orElseThrow(() -> new IllegalArgumentException("No encontramos ese pedido."));
+        if (!EstadoPedido.PENDIENTE.equals(pedido.getEstado().getNombre())) {
+            throw new IllegalArgumentException("Solo se pueden cancelar los pedidos que siguen Pendientes.");
+        }
+        pedido.setEstado(estadoRepository.findByNombre(EstadoPedido.CANCELADO)
+                .orElseThrow(() -> new IllegalStateException("No existe el estado Cancelado")));
+        reponerStock(pedido);
+        Pedido guardado = pedidoRepository.save(pedido);
+        auditoriaService.registrar("CANCELAR", "Pedido", idPedido, "El cliente canceló su pedido");
+        return guardado;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Integer, Integer> itemsDePedidoPropio(Integer idUsuario, Integer idPedido) {
+        Pedido pedido = pedidoRepository.listarConDetalles(idUsuario).stream()
+                .filter(p -> p.getId().equals(idPedido))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No encontramos ese pedido."));
+        Map<Integer, Integer> items = new LinkedHashMap<>();
+        pedido.getDetalles().forEach(d -> items.merge(d.getProducto().getId(), d.getCantidad(), Integer::sum));
+        return items;
     }
 
     @Override
@@ -121,6 +161,11 @@ public class PedidoServiceImpl implements PedidoService {
         return pedidoRepository.countByEstadoNombre(EstadoPedido.PENDIENTE);
     }
 
+    // Un pedido cancelado devuelve sus unidades al stock
+    private void reponerStock(Pedido pedido) {
+        pedido.getDetalles().forEach(d -> productoRepository.reponerStock(d.getProducto().getId(), d.getCantidad()));
+    }
+
     @Override
     @Transactional
     public Pedido cambiarEstado(Integer idPedido, Integer idEstado) {
@@ -129,6 +174,18 @@ public class PedidoServiceImpl implements PedidoService {
         EstadoPedido estado = estadoRepository.findById(idEstado)
                 .orElseThrow(() -> new IllegalArgumentException("El estado elegido no existe."));
         String anterior = pedido.getEstado() != null ? pedido.getEstado().getNombre() : "-";
+        boolean cancelaAhora = !EstadoPedido.CANCELADO.equals(anterior) && EstadoPedido.CANCELADO.equals(estado.getNombre());
+        boolean reactiva = EstadoPedido.CANCELADO.equals(anterior) && !EstadoPedido.CANCELADO.equals(estado.getNombre());
+        if (cancelaAhora) {
+            reponerStock(pedido);
+        } else if (reactiva) {
+            for (var d : pedido.getDetalles()) {
+                if (productoRepository.descontarStock(d.getProducto().getId(), d.getCantidad()) == 0) {
+                    throw new IllegalArgumentException("No hay stock suficiente de " + d.getProducto().getNombre()
+                            + " para reactivar el pedido.");
+                }
+            }
+        }
         pedido.setEstado(estado);
         Pedido guardado = pedidoRepository.save(pedido);
         auditoriaService.registrar("ESTADO", "Pedido", idPedido, "estado " + anterior + " -> " + estado.getNombre());

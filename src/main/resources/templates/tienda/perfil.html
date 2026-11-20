@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mi perfil')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('perfil')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido" style="max-width: 720px">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <span class="antetitulo">TU CUENTA</span>
+        <h1 class="titulo-pagina">Mi perfil</h1>
+        <p class="texto-gris">Actualiza tus datos. Para cambiar tu contraseña usa
+            <a th:href="@{/cambiar-clave}" class="enlace-guinda">cambiar contraseña</a>.</p>
+
+        <div class="caja-blanca tarjeta-pedido">
+            <form th:action="@{/perfil}" th:object="${perfil}" method="post" novalidate>
+                <label class="form-label">Correo electrónico</label>
+                <input type="email" class="form-control" th:value="${correo}" disabled>
+                <div class="form-text">El correo no se puede cambiar.</div>
+
+                <label for="nombre" class="form-label mt-3">Nombre</label>
+                <input type="text" id="nombre" th:field="*{nombre}" class="form-control" maxlength="50"
+                       th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{nombre}"></div>
+
+                <label for="apellido" class="form-label mt-3">Apellido</label>
+                <input type="text" id="apellido" th:field="*{apellido}" class="form-control" maxlength="50"
+                       th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{apellido}"></div>
+
+                <label for="telefono" class="form-label mt-3">Celular</label>
+                <input type="tel" id="telefono" th:field="*{telefono}" class="form-control" maxlength="9"
+                       th:errorclass="is-invalid" placeholder="987654321">
+                <div class="invalid-feedback" th:errors="*{telefono}"></div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-guinda"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+
+        <form th:replace="~{fragments/layout :: salirMovil}"></form>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

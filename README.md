@@ -117,25 +117,39 @@ Cada cuenta (clientes y administrador) tiene **su propia clave** de **Google Aut
 **Empezar de cero:** `database/reiniciar_cuentas.sql` borra todas las cuentas (y sus pedidos y mensajes).
 Al reiniciar la app se crea de nuevo el administrador con una contraseña temporal nueva.
 
+### Funciones del sistema
+
+**Clientes:** catálogo con filtro por categoría, página de cada producto con **reseñas** (1 a 5 estrellas), carrito (máx. 20 por producto y hasta donde alcance el **stock**), pedidos con recojo en tienda o delivery, **método de pago solo en delivery** (Efectivo, Yape / Plin o Tarjeta contra entrega), **subir el comprobante** de un pago con Yape / Plin, **cancelar** un pedido pendiente, **volver a pedir**, **mi perfil**, mensajes y **olvidé mi contraseña**.
+
+**Administrador:** productos (precio, stock, imagen), pedidos (con método de pago y comprobante), mensajes, y **Ventas**: carga de ventas desde un Excel `.xlsx` (columnas Fecha, Producto, Cantidad, Precio; hay una plantilla descargable). Si alguna fila tiene errores no se carga nada.
+
 ### Medidas de seguridad
 
-- **Bloqueo de cuenta:** 5 contraseñas incorrectas seguidas bloquean el correo 15 minutos.
+- **Bloqueo de cuenta:** 5 contraseñas incorrectas seguidas bloquean el correo 15 minutos. La sesión vence a los 10 minutos sin actividad.
 - **Contraseñas:** mínimo 8 caracteres con mayúscula, minúscula, número y símbolo; se rechazan claves comunes (`Password#1`, `Admin#12345`, etc.).
 - **Administrador:** en su primer ingreso (después del código del Authenticator) debe reemplazar la contraseña inicial; no puede abrir otra página hasta hacerlo.
+- **Recuperar contraseña:** el enlace del correo lleva un token aleatorio de 256 bits, de **un solo uso**, que vence a los 30 minutos; en la base solo se guarda su hash. Al abrir el enlace, el token sale de la dirección (no queda en el historial ni en `Referer`). Siempre se responde igual exista o no el correo, hay un límite de 3 enlaces cada 15 minutos por correo, y la cuenta sigue pidiendo el código del Authenticator. Sin servidor de correo configurado, el enlace se escribe en la consola (modo desarrollo); para enviar correos reales define `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD` (y `BASE_URL` con la dirección pública de la app).
+- **Perfil:** el usuario siempre sale de la sesión, nunca de un número en la URL; `/perfil/{id}` con el id de otra persona da 403. El formulario no acepta cambiar correo, rol ni id.
+- **Reseñas:** el texto se escapa al mostrarlo, así que un `<script>` se ve como texto y no se ejecuta. Una reseña por cliente y producto; solo el autor o el administrador la borran.
+- **Stock:** el descuento al confirmar un pedido es una sola instrucción SQL atómica (`... where stock >= cantidad`), así que dos compras simultáneas no pueden vender la misma última unidad. Un pedido cancelado devuelve su stock.
+- **Pedidos:** los precios y el total se calculan en el servidor desde la base de datos; lo que mande el navegador no los cambia.
+- **Archivos subidos:** imágenes de productos y comprobantes se validan por su contenido real (primeros bytes), no por la extensión ni por el tipo que declara el navegador. Los comprobantes (`.jpg`, `.png`, `.pdf`, máx. 5 MB) se guardan con nombre aleatorio en una carpeta privada y solo los ve su dueño o el administrador. Los `.xlsx` de ventas se leen con límites de tamaño y de filas, y protección contra archivos comprimidos maliciosos.
 - **Carrito:** máximo 20 unidades por producto. **Precio mínimo:** S/ 0.01.
 - **Imágenes:** solo se aceptan archivos subidos (JPG/PNG/WEBP); no se admiten URLs externas.
 - **Registro:** si el correo ya existe, la respuesta es igual a la de un registro nuevo.
-- **Auditoría:** los cambios del administrador (productos y estados de pedido) quedan en la tabla `auditoria` (quién, cuándo y qué cambió).
-- **Cabeceras y cookies:** CSP, X-Frame-Options, Referrer-Policy y Permissions-Policy; cookie de sesión `HttpOnly`, `SameSite=Lax` y `Secure`. Bootstrap y Bootstrap Icons se sirven desde el propio sitio (`static/vendor`), sin CDN.
+- **Auditoría:** los cambios del administrador (productos, estados de pedido, cargas de ventas, cambios de clave) quedan en la tabla `auditoria` (quién, cuándo y qué cambió).
+- **Cabeceras y cookies:** CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy y HSTS (por HTTPS); cookie de sesión `HttpOnly`, `SameSite=Lax` y `Secure`, que se borra al cerrar sesión. Bootstrap, los iconos y las fuentes se sirven desde el propio sitio (`static/vendor`): la página no carga nada de terceros.
+- **Errores:** las páginas de error no muestran clases, líneas ni rutas del código.
 
 ### HTTPS
 
-Para forzar HTTPS hace falta un certificado. Para pruebas, uno autofirmado:
+Para usar y forzar HTTPS hace falta un certificado. Para pruebas, uno autofirmado (el script usa `keytool`, que viene con Java):
 
 ```powershell
-keytool -genkeypair -alias panaderia -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore keystore.p12 -validity 365 -dname "CN=localhost"
-$env:SSL_PASSWORD = "la_clave_que_pusiste"
+$env:SSL_PASSWORD = "elige_una_clave_para_el_certificado"
+.\generar-certificado.ps1
+$env:DB_USER = "tu_usuario_mysql"; $env:DB_PASSWORD = "tu_contraseña_mysql"
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=https"
 ```
 
-Entonces se usa **https://localhost:8443** y todo http se redirige a https. No subir `keystore.p12` a GitHub.
+Entonces se usa **https://localhost:8443**. Quien abra `http://localhost:8080` es redirigido a https. El navegador avisará que el certificado no es de confianza (es normal con uno autofirmado): "Avanzado > Continuar". No subir `keystore.p12` a GitHub.

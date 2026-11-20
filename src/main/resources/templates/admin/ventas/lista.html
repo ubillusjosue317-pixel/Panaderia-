@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ventas')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('admin-ventas')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido">
+        <div class="mb-4">
+            <h1 class="h3 mb-0">Ventas</h1>
+            <p class="text-muted mb-0 small">Carga las ventas desde un Excel. Se guardan aparte de los pedidos de la web.</p>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <!-- filas con errores: no se cargo nada hasta corregirlas -->
+        <div th:if="${errores != null and !#lists.isEmpty(errores)}" class="aviso error">
+            <strong>Revisa estas filas:</strong>
+            <ul class="mb-0">
+                <li th:each="e : ${errores}" th:text="${e}">Fila 2: ...</li>
+            </ul>
+        </div>
+
+        <div class="caja-blanca mb-4">
+            <h2 class="h5">Cargar ventas desde Excel</h2>
+            <p class="small text-muted mb-3">
+                Archivo <b>.xlsx</b> de hasta 5 MB. La primera fila debe tener los títulos
+                <b>Fecha, Producto, Cantidad, Precio</b>. El producto debe existir en el catálogo; si dejas el
+                precio vacío se usa el del catálogo. Si alguna fila tiene errores, no se carga nada.
+                <a th:href="@{/admin/ventas/plantilla.xlsx}" class="enlace-guinda">Descargar plantilla</a>
+            </p>
+            <form th:action="@{/admin/ventas/cargar}" method="post" enctype="multipart/form-data"
+                  class="d-flex flex-wrap gap-2 align-items-center">
+                <input type="file" name="archivo" class="form-control" style="max-width: 420px"
+                       accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                <button type="submit" class="btn btn-guinda"><i class="bi bi-upload"></i> Cargar ventas</button>
+            </form>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+                <div class="caja-blanca">
+                    <small class="text-muted">Ventas registradas</small>
+                    <div class="h4 mb-0" th:text="${cantidadVentas}">0</div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="caja-blanca">
+                    <small class="text-muted">Total vendido</small>
+                    <div class="h4 mb-0" th:text="'S/ ' + ${#numbers.formatDecimal(totalVentas, 1, 2)}">S/ 0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(ventas)}" class="vacio">
+            <span class="vacio-icono"><i class="bi bi-graph-up"></i></span>
+            <h2>Aún no hay ventas cargadas</h2>
+            <p>Sube un Excel para empezar.</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(ventas)}" class="caja-blanca table-responsive">
+            <p class="small text-muted">Se muestran las últimas 200 ventas.</p>
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th class="text-end">Cantidad</th>
+                    <th class="text-end">Precio</th>
+                    <th class="text-end">Total</th>
+                    <th>Archivo</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="v : ${ventas}">
+                    <td th:text="${#temporals.format(v.fecha, 'dd/MM/yyyy')}">20/11/2026</td>
+                    <td th:text="${v.producto}">Pan francés</td>
+                    <td class="text-end" th:text="${v.cantidad}">10</td>
+                    <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(v.precioUnitario, 1, 2)}">S/ 2.00</td>
+                    <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(v.total, 1, 2)}">S/ 20.00</td>
+                    <td class="small text-muted" th:text="${v.archivo}">ventas.xlsx</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

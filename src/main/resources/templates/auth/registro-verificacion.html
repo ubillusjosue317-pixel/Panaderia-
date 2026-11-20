@@ -3,7 +3,9 @@
 <head th:replace="~{fragments/layout :: head('Verifica tu cuenta')}"></head>
 <body class="pagina-auth movil-login">
 
-<div class="auth-imagen"></div>
+<div class="auth-imagen">
+    <a th:href="@{/registro}"><i class="bi bi-arrow-left"></i> Volver al registro</a>
+</div>
 
 <div class="auth-panel">
     <div class="auth-cabecera">

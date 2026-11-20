@@ -3,7 +3,12 @@
 <head th:replace="~{fragments/layout :: head('Verificación en 2 pasos')}"></head>
 <body class="pagina-auth movil-login">
 
-<div class="auth-imagen"></div>
+<div class="auth-imagen">
+    <!-- la sesion esta a medias (falta el codigo): volver significa cerrarla y regresar al inicio de sesion -->
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="boton-volver"><i class="bi bi-arrow-left"></i> Volver al inicio de sesión</button>
+    </form>
+</div>
 
 <div class="auth-panel">
     <div class="auth-cabecera">

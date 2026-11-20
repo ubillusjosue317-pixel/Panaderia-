@@ -13,7 +13,8 @@
         <span class="antetitulo">TUS COMPRAS</span>
         <h1 class="titulo-pagina">Mis pedidos</h1>
         <p class="texto-gris">Revisa el estado de tus pedidos.
-            ¿Alguna duda? <a th:href="@{/mensajes}" class="enlace-guinda">Escríbenos</a>.</p>
+            ¿Alguna duda? <a th:href="@{/mensajes}" class="enlace-guinda">Escríbenos</a>.
+            · <a th:href="@{/perfil}" class="enlace-guinda">Mi perfil</a></p>
 
         <div th:if="${#lists.isEmpty(pedidos)}" class="vacio">
             <span class="vacio-icono"><i class="bi bi-receipt"></i></span>
@@ -43,6 +44,38 @@
             <p th:if="${pedido.direccionEntrega}" class="small text-muted mt-2 mb-0">
                 <i class="bi bi-geo-alt"></i> <span th:text="${pedido.direccionEntrega}">Dirección</span>
             </p>
+            <p th:if="${pedido.metodoPago}" class="small text-muted mt-1 mb-0">
+                <i class="bi bi-wallet2"></i> Pago: <span th:text="${pedido.metodoPago.etiqueta}">Efectivo</span>
+            </p>
+
+            <!-- pedidos pagados con Yape / Plin: el cliente sube la captura de su pago -->
+            <div th:if="${pedido.metodoPago != null and pedido.metodoPago.name() == 'YAPE_PLIN' and pedido.estado.nombre != 'Cancelado'}"
+                 class="mt-3">
+                <a th:if="${pedido.comprobante}" th:href="@{/comprobantes/{id}(id=${pedido.id})}" target="_blank"
+                   rel="noopener" class="enlace-guinda small"><i class="bi bi-file-earmark-check"></i> Ver mi comprobante</a>
+                <form th:action="@{/mis-pedidos/{id}/comprobante(id=${pedido.id})}" method="post"
+                      enctype="multipart/form-data" class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                    <input type="file" name="archivo" accept=".jpg,.jpeg,.png,.pdf" required
+                           class="form-control form-control-sm" style="max-width: 320px"
+                           th:aria-label="'Comprobante del pedido ' + ${pedido.id}">
+                    <button type="submit" class="btn btn-sm btn-guinda">
+                        <i class="bi bi-upload"></i>
+                        <th:block th:text="${pedido.comprobante} ? 'Reemplazar comprobante' : 'Subir comprobante'">Subir</th:block>
+                    </button>
+                </form>
+                <div class="form-text">JPG, PNG o PDF de hasta 5 MB.</div>
+            </div>
+
+            <div class="acciones-pedido">
+                <form th:action="@{/mis-pedidos/{id}/volver-a-pedir(id=${pedido.id})}" method="post">
+                    <button type="submit" class="btn btn-sm btn-guinda"><i class="bi bi-arrow-repeat"></i> Volver a pedir</button>
+                </form>
+                <form th:if="${pedido.estado.nombre == 'Pendiente'}"
+                      th:action="@{/mis-pedidos/{id}/cancelar(id=${pedido.id})}" method="post"
+                      onsubmit="return confirm('¿Seguro que quieres cancelar este pedido?');">
+                    <button type="submit" class="btn btn-sm btn-cancelar"><i class="bi bi-x-circle"></i> Cancelar pedido</button>
+                </form>
+            </div>
         </article>
 
         <form th:replace="~{fragments/layout :: salirMovil}"></form>

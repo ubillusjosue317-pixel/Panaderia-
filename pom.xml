@@ -56,6 +56,17 @@
             <artifactId>core</artifactId>
             <version>3.5.3</version>
         </dependency>
+        <!-- envio del correo de recuperacion de contraseña (solo se usa si se configura un servidor SMTP) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <!-- lectura de archivos .xlsx (carga de ventas en el panel del administrador) -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.4.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -1,6 +1,7 @@
 package com.utp.panaderia.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,12 +27,12 @@ import jakarta.servlet.http.HttpSession;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Politica de contenido: solo recursos propios y Google Fonts (Bootstrap ya se sirve desde el sitio).
+    // Politica de contenido: solo recursos propios (Bootstrap y las fuentes se sirven desde el sitio).
     // 'unsafe-inline' se mantiene porque las vistas usan scripts y estilos dentro de la pagina.
     private static final String CSP = "default-src 'self'; "
             + "script-src 'self' 'unsafe-inline'; "
-            + "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            + "font-src 'self' https://fonts.gstatic.com; "
+            + "style-src 'self' 'unsafe-inline'; "
+            + "font-src 'self'; "
             + "img-src 'self' data: blob:; "
             + "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
 
@@ -52,9 +53,12 @@ public class SecurityConfig {
                 .addHeaderWriter(new StaticHeadersWriter("Permissions-Policy",
                         "camera=(), microphone=(), geolocation=()")))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/explorar", "/catalogo", "/login", "/registro", "/registro/verificacion", "/error").permitAll()
+                .requestMatchers("/", "/explorar", "/catalogo", "/login", "/registro", "/registro/verificacion", "/recuperar", "/recuperar/**", "/error").permitAll()
                 // carrito y favoritos se pueden usar sin cuenta, solo confirmar el pedido pide login
                 .requestMatchers("/pedidos", "/carrito/**", "/favoritos", "/favoritos/**").permitAll()
+                // la pagina de un producto y sus reseñas se pueden leer sin cuenta; escribir pide ser cliente
+                .requestMatchers(HttpMethod.GET, "/producto/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/producto/*/resenas").hasRole(Rol.CLIENTE)
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/vendor/**", "/uploads/**").permitAll()
                 .requestMatchers("/admin/**").hasRole(Rol.ADMINISTRADOR)
                 // los mensajes los escriben los clientes; el administrador responde desde /admin/mensajes
@@ -74,6 +78,9 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?salir")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll())
             .exceptionHandling(ex -> ex.accessDeniedPage("/acceso-denegado"))
             // no deja usar la cuenta hasta ingresar el codigo de 6 digitos

@@ -67,10 +67,11 @@ public class ProductoServiceImpl implements ProductoService {
         String cambios;
         if (form.getId() == null) {
             producto = new Producto();
-            cambios = "precio=" + form.getPrecio() + ", disponible=" + form.isDisponible();
+            cambios = "precio=" + form.getPrecio() + ", stock=" + form.getStock() + ", disponible=" + form.isDisponible();
         } else {
             producto = buscarPorId(form.getId());
             cambios = "precio " + producto.getPrecio() + " -> " + form.getPrecio()
+                    + ", stock " + producto.getStock() + " -> " + form.getStock()
                     + ", disponible " + producto.isDisponible() + " -> " + form.isDisponible();
         }
         boolean esNuevo = form.getId() == null;
@@ -80,6 +81,7 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setDescripcion(vacioANull(form.getDescripcion()));
         producto.setPrecio(form.getPrecio());
         producto.setImagenUrl(vacioANull(form.getImagenUrl()));
+        producto.setStock(form.getStock());
         producto.setDisponible(form.isDisponible());
 
         Producto guardado = productoRepository.save(producto);

@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.utp.panaderia.dto.PerfilForm;
 import com.utp.panaderia.dto.RegistroForm;
 import com.utp.panaderia.dto.RegistroPendiente;
 import com.utp.panaderia.model.Rol;
@@ -79,6 +80,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public String cifrarPassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    @Override
+    @Transactional
+    public Usuario actualizarPerfil(Integer idUsuario, PerfilForm form) {
+        Usuario usuario = buscarPorId(idUsuario);
+        usuario.setNombre(form.getNombre().trim());
+        usuario.setApellido(form.getApellido().trim());
+        usuario.setTelefono(form.getTelefono() == null || form.getTelefono().isBlank() ? null : form.getTelefono().trim());
+        return usuarioRepository.save(usuario);
     }
 
     @Override

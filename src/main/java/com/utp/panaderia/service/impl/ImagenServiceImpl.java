@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.utp.panaderia.service.ImagenService;
+import com.utp.panaderia.util.FirmaArchivo;
 
 @Service
 public class ImagenServiceImpl implements ImagenService {
@@ -37,6 +38,16 @@ public class ImagenServiceImpl implements ImagenService {
         }
         if (archivo.getSize() > MAXIMO_BYTES) {
             throw new IllegalArgumentException("La imagen no puede pesar más de 5 MB.");
+        }
+
+        // el tipo declarado por el navegador se puede falsear: se comprueba con los primeros bytes
+        try (InputStream cabecera = archivo.getInputStream()) {
+            String real = FirmaArchivo.detectar(cabecera.readNBytes(FirmaArchivo.BYTES_NECESARIOS));
+            if (real == null || !real.equals(archivo.getContentType())) {
+                throw new IllegalArgumentException("El archivo no es una imagen JPG, PNG o WEBP válida.");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo leer la imagen", e);
         }
 
         // nombre aleatorio: no se usa el nombre original para evitar rutas raras o archivos repetidos

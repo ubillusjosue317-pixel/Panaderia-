@@ -41,6 +41,15 @@ public class Pedido {
     @Column(name = "direccion_entrega", length = 200)
     private String direccionEntrega;
 
+    // nombre del archivo del comprobante de pago (Yape / Plin), guardado fuera de las carpetas publicas
+    @Column(length = 60)
+    private String comprobante;
+
+    // solo tiene valor en los pedidos con delivery
+    @Enumerated(EnumType.STRING)
+    @Column(name = "metodo_pago", length = 20)
+    private MetodoPago metodoPago;
+
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detalles = new ArrayList<>();
 

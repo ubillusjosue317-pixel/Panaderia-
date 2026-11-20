@@ -2,6 +2,8 @@ package com.utp.panaderia.model;
 
 import java.math.BigDecimal;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +34,11 @@ public class Producto {
 
     @Column(name = "imagen_url")
     private String imagenUrl;
+
+    // unidades disponibles; el pedido solo se registra si alcanza (ver descontarStock)
+    @ColumnDefault("50")
+    @Column(nullable = false)
+    private int stock = 50;
 
     // en la tabla se llama "estado", true = se muestra en el catalogo
     @Column(name = "estado", nullable = false)

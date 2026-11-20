@@ -1,5 +1,7 @@
 package com.utp.panaderia.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
@@ -9,7 +11,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import com.utp.panaderia.model.Categoria;
 import com.utp.panaderia.model.Rol;
+import com.utp.panaderia.service.CategoriaService;
 import com.utp.panaderia.service.MensajeService;
 import com.utp.panaderia.service.PedidoService;
 import com.utp.panaderia.session.Carrito;
@@ -28,6 +32,15 @@ public class GlobalControllerAdvice {
 
     @Autowired
     private MensajeService mensajeService;
+
+    @Autowired
+    private CategoriaService categoriaService;
+
+    // categorias del menu del boton de filtro (embudo) de la barra superior
+    @ModelAttribute("categoriasFiltro")
+    public List<Categoria> categoriasFiltro(Authentication autenticacion) {
+        return esAdmin(autenticacion) ? List.of() : categoriaService.listar();
+    }
 
     @ModelAttribute("carrito")
     public Carrito carrito() {
@@ -49,7 +62,15 @@ public class GlobalControllerAdvice {
 
     // la foto supera el limite de spring.servlet.multipart.max-file-size
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public String imagenMuyGrande(HttpServletRequest request) {
+    public String archivoMuyGrande(HttpServletRequest request) {
+        if (request.getRequestURI().startsWith("/admin/ventas")) {
+            RequestContextUtils.getOutputFlashMap(request).put("error", "El archivo no puede pesar más de 5 MB.");
+            return "redirect:/admin/ventas";
+        }
+        if (request.getRequestURI().startsWith("/mis-pedidos")) {
+            RequestContextUtils.getOutputFlashMap(request).put("error", "El comprobante no puede pesar más de 5 MB.");
+            return "redirect:/mis-pedidos";
+        }
         RequestContextUtils.getOutputFlashMap(request).put("error", "La imagen no puede pesar más de 5 MB.");
         return "redirect:/admin/productos";
     }

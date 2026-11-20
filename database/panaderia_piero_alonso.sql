@@ -44,9 +44,11 @@ CREATE TABLE producto (
     descripcion   TEXT,
     precio        DECIMAL(8,2) NOT NULL,
     imagen_url    VARCHAR(255),
+    stock         INT NOT NULL DEFAULT 50,
     estado        BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT fk_producto_categoria FOREIGN KEY (id_categoria) REFERENCES categoria (id_categoria),
-    CONSTRAINT chk_producto_precio CHECK (precio >= 0)
+    CONSTRAINT chk_producto_precio CHECK (precio >= 0),
+    CONSTRAINT chk_producto_stock CHECK (stock >= 0)
 );
 
 CREATE TABLE estado_pedido (
@@ -61,6 +63,8 @@ CREATE TABLE pedido (
     fecha_pedido       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total              DECIMAL(10,2) NOT NULL,
     tipo_entrega       VARCHAR(20) NOT NULL,
+    metodo_pago VARCHAR(20),
+    comprobante VARCHAR(60),
     direccion_entrega  VARCHAR(200),
     CONSTRAINT fk_pedido_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario),
     CONSTRAINT fk_pedido_estado  FOREIGN KEY (id_estado)  REFERENCES estado_pedido (id_estado),
@@ -98,6 +102,40 @@ CREATE TABLE auditoria (
     id_entidad   INT,
     detalle      VARCHAR(500),
     fecha        DATETIME     NOT NULL
+);
+
+CREATE TABLE token_recuperacion (
+    id_token    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario  INT NOT NULL,
+    token_hash  VARCHAR(64) NOT NULL UNIQUE,
+    expira_en   DATETIME NOT NULL,
+    usado       BOOLEAN NOT NULL DEFAULT FALSE,
+    creado_en   DATETIME NOT NULL,
+    CONSTRAINT fk_token_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+);
+
+CREATE TABLE resena (
+    id_resena    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_producto  INT NOT NULL,
+    id_usuario   INT NOT NULL,
+    calificacion INT NOT NULL,
+    comentario   VARCHAR(500) NOT NULL,
+    fecha        DATETIME NOT NULL,
+    CONSTRAINT uq_resena UNIQUE (id_usuario, id_producto),
+    CONSTRAINT fk_resena_producto FOREIGN KEY (id_producto) REFERENCES producto (id_producto),
+    CONSTRAINT fk_resena_usuario FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+);
+
+CREATE TABLE venta (
+    id_venta        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    fecha           DATE         NOT NULL,
+    producto        VARCHAR(100) NOT NULL,
+    cantidad        INT          NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL,
+    total           DECIMAL(12,2) NOT NULL,
+    archivo         VARCHAR(100),
+    cargado_por     VARCHAR(100) NOT NULL,
+    cargado_en      DATETIME     NOT NULL
 );
 
 -- Datos base

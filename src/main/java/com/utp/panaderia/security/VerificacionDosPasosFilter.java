@@ -2,6 +2,7 @@ package com.utp.panaderia.security;
 
 import java.io.IOException;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -39,6 +40,18 @@ public class VerificacionDosPasosFilter extends OncePerRequestFilter {
                 return;
             }
             String ruta = request.getRequestURI().substring(request.getContextPath().length());
+
+            // Si estando a medias (falta el codigo o el cambio de clave) la persona vuelve atras
+            // y abre el login o el registro, se cancela esa sesion a medias y puede empezar de nuevo
+            // (por ejemplo para crear otra cuenta), en lugar de quedar atrapada en la verificacion.
+            boolean aMedias = sesion.getAttribute(PENDIENTE) != null || sesion.getAttribute(CAMBIO_CLAVE) != null;
+            if (aMedias && "GET".equalsIgnoreCase(request.getMethod())
+                    && (ruta.equals("/login") || ruta.equals("/registro") || ruta.equals("/recuperar"))) {
+                sesion.invalidate();
+                SecurityContextHolder.clearContext();
+                chain.doFilter(request, response);
+                return;
+            }
             if (sesion.getAttribute(PENDIENTE) != null && !ruta.equals("/verificacion") && !esComun(ruta)) {
                 response.sendRedirect(request.getContextPath() + "/verificacion");
                 return;

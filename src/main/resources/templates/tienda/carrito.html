@@ -64,6 +64,15 @@
                         <input id="direccion" name="direccion" maxlength="200" placeholder="Calle, número, referencia">
                     </div>
 
+                    <!-- el metodo de pago solo se pide en delivery (en recojo se paga en la tienda) -->
+                    <div id="cajaPago" hidden>
+                        <label for="metodoPago">Método de pago</label>
+                        <select id="metodoPago" name="metodoPago">
+                            <option value="">Elige cómo pagarás...</option>
+                            <option th:each="m : ${metodosPago}" th:value="${m.name()}" th:text="${m.etiqueta}">Efectivo</option>
+                        </select>
+                    </div>
+
                     <button type="submit" class="boton-guinda">Confirmar pedido <i class="bi bi-arrow-right"></i></button>
                 </form>
 
@@ -82,7 +91,12 @@
     const tipoEntrega = document.getElementById("tipoEntrega");
     if (tipoEntrega) {
         tipoEntrega.addEventListener("change", function () {
-            document.getElementById("cajaDireccion").hidden = this.value !== "DELIVERY";
+            const delivery = this.value === "DELIVERY";
+            document.getElementById("cajaDireccion").hidden = !delivery;
+            // direccion y metodo de pago solo se piden (y se exigen) en delivery
+            document.getElementById("cajaPago").hidden = !delivery;
+            document.getElementById("metodoPago").required = delivery;
+            document.getElementById("direccion").required = delivery;
         });
     }
 </script>

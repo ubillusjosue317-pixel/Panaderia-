@@ -122,7 +122,8 @@ class AdministracionTest {
     @WithUserDetails(ADMIN)
     void subirImagenDelProducto() throws Exception {
         Producto p = producto("Baguette clásica");
-        MockMultipartFile foto = new MockMultipartFile("archivoImagen", "baguette.png", "image/png", new byte[] { 1, 2, 3 });
+        MockMultipartFile foto = new MockMultipartFile("archivoImagen", "baguette.png", "image/png",
+                new byte[] { (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0 }); // PNG real: se valida el contenido
 
         mvc.perform(multipart("/admin/productos/guardar").file(foto).with(csrf())
                         .param("id", p.getId().toString())
@@ -159,7 +160,7 @@ class AdministracionTest {
     void elAdministradorVeLosPedidosYCambiaElEstado() throws Exception {
         Integer idCliente = usuarioRepository.findByEmail(CLIENTE).orElseThrow().getId();
         Pedido pedido = pedidoService.registrarPedido(idCliente, Map.of(producto("Pan camote").getId(), 3),
-                TipoEntrega.DELIVERY, "Av. Los Olivos 123");
+                TipoEntrega.DELIVERY, "Av. Los Olivos 123", com.utp.panaderia.model.MetodoPago.EFECTIVO);
         EstadoPedido listo = estadoRepository.findByNombre(EstadoPedido.LISTO).orElseThrow();
 
         mvc.perform(get("/admin/pedidos"))

@@ -147,9 +147,13 @@
         padding: 2px 5px;
     }
 
-    .boton-filtro {
+    /* el contenedor del menu ocupa el lugar que antes ocupaba el boton */
+    .caja-filtro {
         grid-column: 2;
         grid-row: 2;
+    }
+
+    .boton-filtro {
         display: grid;
         place-items: center;
         width: 32px;

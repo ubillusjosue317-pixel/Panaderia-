@@ -3,7 +3,11 @@
 <head th:replace="~{fragments/layout :: head('Cambiar contraseña')}"></head>
 <body class="pagina-auth movil-login">
 
-<div class="auth-imagen"></div>
+<div class="auth-imagen">
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="boton-volver"><i class="bi bi-arrow-left"></i> Cerrar sesión</button>
+    </form>
+</div>
 
 <div class="auth-panel">
     <div class="auth-cabecera">

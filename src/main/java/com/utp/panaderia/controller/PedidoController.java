@@ -1,6 +1,7 @@
 package com.utp.panaderia.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.utp.panaderia.dto.ItemCarrito;
+import com.utp.panaderia.model.MetodoPago;
 import com.utp.panaderia.model.Pedido;
 import com.utp.panaderia.model.Producto;
 import com.utp.panaderia.model.TipoEntrega;
@@ -46,6 +48,7 @@ public class PedidoController {
         List<ItemCarrito> items = carritoService.obtenerItems(carrito);
         model.addAttribute("items", items);
         model.addAttribute("total", carritoService.calcularTotal(items));
+        model.addAttribute("metodosPago", MetodoPago.values());
         return "tienda/carrito";
     }
 
@@ -54,7 +57,12 @@ public class PedidoController {
                           @RequestHeader(value = "Referer", required = false) String referer,
                           RedirectAttributes redirect) {
         Producto producto = productoService.buscarPorId(id);
-        if (producto.isDisponible()) {
+        int enCesta = carrito.getItems().getOrDefault(id, 0);
+        if (producto.isDisponible() && enCesta >= producto.getStock()) {
+            redirect.addFlashAttribute("error", producto.getStock() == 0
+                    ? producto.getNombre() + " está agotado."
+                    : "Solo quedan " + producto.getStock() + " unidades de " + producto.getNombre() + ".");
+        } else if (producto.isDisponible()) {
             if (carrito.agregar(id)) {
                 redirect.addFlashAttribute("mensaje", producto.getNombre() + " se agregó a tu pedido.");
             } else {
@@ -82,11 +90,12 @@ public class PedidoController {
     @PostMapping("/pedidos/confirmar")
     public String confirmar(@RequestParam(required = false) String tipoEntrega,
                             @RequestParam(required = false) String direccion,
+                            @RequestParam(required = false) String metodoPago,
                             @AuthenticationPrincipal UsuarioAutenticado usuario,
                             RedirectAttributes redirect) {
         try {
             Pedido pedido = pedidoService.registrarPedido(usuario.getId(), carrito.getItems(),
-                    convertirTipoEntrega(tipoEntrega), direccion);
+                    convertirTipoEntrega(tipoEntrega), direccion, convertirMetodoPago(metodoPago));
             carrito.vaciar();
             redirect.addFlashAttribute("mensaje", "¡Listo! Tu pedido #" + pedido.getId() + " fue registrado.");
             return "redirect:/mis-pedidos";
@@ -105,6 +114,60 @@ public class PedidoController {
             return TipoEntrega.valueOf(valor);
         } catch (IllegalArgumentException e) {
             return null;
+        }
+    }
+
+    private MetodoPago convertirMetodoPago(String valor) {
+        if (valor == null) {
+            return null;
+        }
+        try {
+            return MetodoPago.valueOf(valor);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    // ---------- cancelar y volver a pedir ----------
+
+    @PostMapping("/mis-pedidos/{id}/cancelar")
+    public String cancelar(@PathVariable Integer id, @AuthenticationPrincipal UsuarioAutenticado usuario,
+                           RedirectAttributes redirect) {
+        try {
+            pedidoService.cancelarPropio(usuario.getId(), id);
+            redirect.addFlashAttribute("mensaje", "Tu pedido #" + id + " fue cancelado.");
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/mis-pedidos";
+    }
+
+    // Pone en la cesta los mismos productos de un pedido anterior (sin pasar del maximo
+    // por producto y omitiendo los que ya no estan disponibles)
+    @PostMapping("/mis-pedidos/{id}/volver-a-pedir")
+    public String volverAPedir(@PathVariable Integer id, @AuthenticationPrincipal UsuarioAutenticado usuario,
+                               RedirectAttributes redirect) {
+        try {
+            int agregados = 0;
+            int omitidos = 0;
+            for (Map.Entry<Integer, Integer> item : pedidoService.itemsDePedidoPropio(usuario.getId(), id).entrySet()) {
+                Producto producto = productoService.buscarPorId(item.getKey());
+                if (!producto.isDisponible()) {
+                    omitidos++;
+                    continue;
+                }
+                int cabenPorStock = producto.getStock() - carrito.getItems().getOrDefault(item.getKey(), 0);
+                agregados += carrito.agregar(item.getKey(), Math.min(item.getValue(), Math.max(0, cabenPorStock)));
+            }
+            String mensaje = agregados + " unidades del pedido #" + id + " se agregaron a tu cesta.";
+            if (omitidos > 0) {
+                mensaje += " " + omitidos + " producto(s) ya no están disponibles.";
+            }
+            redirect.addFlashAttribute("mensaje", mensaje);
+            return "redirect:/pedidos";
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+            return "redirect:/mis-pedidos";
         }
     }
 

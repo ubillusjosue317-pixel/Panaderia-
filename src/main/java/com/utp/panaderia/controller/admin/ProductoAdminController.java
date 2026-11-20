@@ -60,6 +60,7 @@ public class ProductoAdminController {
         form.setDescripcion(p.getDescripcion());
         form.setPrecio(p.getPrecio());
         form.setImagenUrl(p.getImagenUrl());
+        form.setStock(p.getStock());
         form.setDisponible(p.isDisponible());
 
         model.addAttribute("producto", form);

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(${producto.nombre})}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: menu('explorar')}"></aside>
+
+<div class="principal">
+    <header th:replace="~{fragments/layout :: barra}"></header>
+
+    <main class="contenido" style="max-width: 860px">
+        <div th:replace="~{fragments/layout :: alertas}"></div>
+
+        <a th:href="@{/explorar}" class="text-decoration-none small enlace-guinda">
+            <i class="bi bi-arrow-left"></i> Volver al catálogo
+        </a>
+
+        <div class="caja-blanca tarjeta-pedido mt-3">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-5">
+                    <img class="w-100 rounded-4"
+                         th:src="${producto.imagenUrl != null} ? @{${producto.imagenUrl}} : @{/img/producto-default.svg}"
+                         th:alt="${producto.nombre}"
+                         th:onerror="|this.onerror=null; this.src='@{/img/producto-default.svg}'|">
+                </div>
+                <div class="col-md-7">
+                    <small class="categoria-producto" th:text="${producto.categoria.nombre}">Panadería</small>
+                    <h1 class="titulo-pagina mb-2" th:text="${producto.nombre}">Pan camote</h1>
+                    <div class="mb-2" th:if="${promedio != null}">
+                        <i class="bi" th:each="i : ${#numbers.sequence(1, 5)}"
+                           th:classappend="${i <= promedio + 0.5} ? 'bi-star-fill text-warning' : 'bi-star text-warning'"></i>
+                        <small class="text-muted"
+                               th:text="${#numbers.formatDecimal(promedio, 1, 1)} + ' (' + ${#lists.size(resenas)} + ' reseñas)'">4.5</small>
+                    </div>
+                    <p class="texto-gris" th:text="${producto.descripcion}">Descripción</p>
+                    <strong class="precio-producto d-block mb-3">S/. <th:block
+                            th:text="${#numbers.formatDecimal(producto.precio, 1, 2)}">1.00</th:block></strong>
+
+                    <form th:if="${producto.stock > 0}" th:action="@{/carrito/agregar/{id}(id=${producto.id})}"
+                          method="post" sec:authorize="!hasRole('ADMINISTRADOR')">
+                        <button type="submit" class="btn btn-guinda"><i class="bi bi-plus-lg"></i> Agregar a mi pedido</button>
+                    </form>
+                    <span th:unless="${producto.stock > 0}" class="etiqueta-agotado">Agotado</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="h5 mt-4 mb-3">Reseñas</h2>
+
+        <p class="texto-gris" th:if="${#lists.isEmpty(resenas)}">Todavía no hay reseñas. ¡Sé la primera persona en opinar!</p>
+
+        <article class="caja-blanca tarjeta-pedido mb-3" th:each="r : ${resenas}">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <strong th:text="${r.usuario.nombre}">Nombre</strong>
+                <span>
+                    <i class="bi" th:each="i : ${#numbers.sequence(1, 5)}"
+                       th:classappend="${i <= r.calificacion} ? 'bi-star-fill text-warning' : 'bi-star text-warning'"></i>
+                </span>
+                <small class="text-muted ms-auto" th:text="${#temporals.format(r.fecha, 'dd/MM/yyyy')}">fecha</small>
+            </div>
+            <!-- th:text escapa el HTML: un "<script>" escrito en la reseña se ve como texto y no se ejecuta -->
+            <p class="mb-0 mt-2" style="white-space: pre-line" th:text="${r.comentario}">Comentario</p>
+
+            <form sec:authorize="isAuthenticated()"
+                  th:if="${#authorization.expression('hasRole(''ADMINISTRADOR'')') or #authentication.principal.id == r.usuario.id}"
+                  th:action="@{/producto/{id}/resenas/{idResena}/eliminar(id=${producto.id}, idResena=${r.id})}"
+                  method="post" class="mt-2"
+                  onsubmit="return confirm('¿Eliminar esta reseña?');">
+                <button type="submit" class="btn btn-sm btn-cancelar"><i class="bi bi-trash"></i> Eliminar</button>
+            </form>
+        </article>
+
+        <div class="caja-blanca tarjeta-pedido" sec:authorize="hasRole('CLIENTE')">
+            <h3 class="h6">Deja tu reseña</h3>
+            <form th:action="@{/producto/{id}/resenas(id=${producto.id})}" th:object="${resena}" method="post" novalidate>
+                <label for="calificacion" class="form-label">Calificación</label>
+                <select id="calificacion" th:field="*{calificacion}" class="form-select" th:errorclass="is-invalid">
+                    <option value="">Elige...</option>
+                    <option value="5">★★★★★ Excelente</option>
+                    <option value="4">★★★★☆ Muy bueno</option>
+                    <option value="3">★★★☆☆ Bueno</option>
+                    <option value="2">★★☆☆☆ Regular</option>
+                    <option value="1">★☆☆☆☆ Malo</option>
+                </select>
+                <div class="invalid-feedback" th:errors="*{calificacion}"></div>
+
+                <label for="comentario" class="form-label mt-3">Comentario</label>
+                <textarea id="comentario" th:field="*{comentario}" class="form-control" rows="3" maxlength="500"
+                          th:errorclass="is-invalid"></textarea>
+                <div class="invalid-feedback" th:errors="*{comentario}"></div>
+
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-guinda"><i class="bi bi-send"></i> Publicar reseña</button>
+                </div>
+            </form>
+        </div>
+
+        <p class="texto-gris" sec:authorize="isAnonymous()">
+            <a th:href="@{/login}" class="enlace-guinda">Inicia sesión</a> para dejar una reseña.
+        </p>
+    </main>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

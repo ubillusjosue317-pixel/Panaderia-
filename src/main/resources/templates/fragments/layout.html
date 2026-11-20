@@ -6,9 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${titulo} + ' | Panadería Piero Alonso'">Panadería Piero Alonso</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- fuentes alojadas en el propio sitio: la pagina no pide nada a Google -->
+    <link th:href="@{/vendor/fonts/fuentes.css}" rel="stylesheet">
     <!-- Bootstrap e iconos se sirven desde el propio sitio (static/vendor), sin CDN -->
     <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
     <link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.min.css}" rel="stylesheet">
@@ -35,6 +34,9 @@
         <a th:href="@{/admin/pedidos}" th:classappend="${activa == 'admin-pedidos'} ? 'activo'">
             <i class="bi bi-receipt"></i> Pedidos
             <span class="contador" th:if="${pedidosPendientes > 0}" th:text="${pedidosPendientes}">0</span>
+        </a>
+        <a th:href="@{/admin/ventas}" th:classappend="${activa == 'admin-ventas'} ? 'activo'">
+            <i class="bi bi-graph-up"></i> Ventas
         </a>
         <a th:href="@{/admin/mensajes}" th:classappend="${activa == 'admin-mensajes'} ? 'activo'">
             <i class="bi bi-chat-dots"></i> Mensajería
@@ -77,6 +79,7 @@
             <span class="cuenta-icono"><i class="bi bi-person"></i></span>
             <div>
                 <strong>Mi cuenta</strong>
+                <a sec:authorize="isAuthenticated()" th:href="@{/perfil}">Mi perfil</a>
                 <a sec:authorize="isAnonymous()" th:href="@{/login}">Iniciar sesión</a>
                 <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
                     <button type="submit" class="boton-texto">Cerrar sesión</button>
@@ -93,6 +96,9 @@
     <a th:href="@{/admin/pedidos}" th:classappend="${activa == 'admin-pedidos'} ? 'activo'">
         <i class="bi bi-receipt-cutoff"></i>Pedidos
         <span class="contador-movil" th:if="${pedidosPendientes > 0}" th:text="${pedidosPendientes}">0</span>
+    </a>
+    <a th:href="@{/admin/ventas}" th:classappend="${activa == 'admin-ventas'} ? 'activo'">
+        <i class="bi bi-graph-up"></i>Ventas
     </a>
     <a th:href="@{/admin/mensajes}" th:classappend="${activa == 'admin-mensajes'} ? 'activo'">
         <i class="bi" th:classappend="${activa == 'admin-mensajes'} ? 'bi-chat-dots-fill' : 'bi-chat-dots'"></i>Mensajes
@@ -142,9 +148,20 @@
             <i class="bi bi-cart3"></i>
             <sup th:if="${carrito.cantidadTotal > 0}" th:text="${carrito.cantidadTotal}">0</sup>
         </a>
-        <a class="boton-filtro" th:href="@{/explorar}" aria-label="Filtrar por categoría">
-            <i class="bi bi-funnel"></i>
-        </a>
+        <!-- el embudo abre un menu con las categorias (antes solo llevaba a Explorar) -->
+        <div class="dropdown caja-filtro">
+            <button type="button" class="boton-filtro" data-bs-toggle="dropdown" aria-expanded="false"
+                    aria-label="Filtrar por categoría" title="Filtrar por categoría">
+                <i class="bi bi-funnel"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">Filtrar por categoría</h6></li>
+                <li><a class="dropdown-item" th:href="@{/explorar}">Todas</a></li>
+                <li th:each="c : ${categoriasFiltro}">
+                    <a class="dropdown-item" th:href="@{/explorar(categoria=${c.id})}" th:text="${c.nombre}">Panadería</a>
+                </li>
+            </ul>
+        </div>
     </div>
 </header>
 
@@ -179,12 +196,13 @@
         </div>
         <div class="info-producto">
             <small class="categoria-producto" th:text="${p.categoria.nombre}">Panadería</small>
-            <form th:action="@{/carrito/agregar/{id}(id=${p.id})}" method="post" class="form-agregar">
+            <form th:if="${p.stock > 0}" th:action="@{/carrito/agregar/{id}(id=${p.id})}" method="post" class="form-agregar">
                 <button type="submit" class="boton-agregar" title="Agregar al pedido">
                     <i class="bi bi-plus-lg"></i>
                 </button>
             </form>
-            <h3 th:text="${p.nombre}">Pan camote</h3>
+            <span th:unless="${p.stock > 0}" class="etiqueta-agotado">Agotado</span>
+            <h3><a th:href="@{/producto/{id}(id=${p.id})}" class="enlace-producto" th:text="${p.nombre}">Pan camote</a></h3>
             <small class="etiqueta-precio">Precio</small>
             <strong class="precio-producto">S/. <th:block th:text="${#numbers.formatDecimal(p.precio, 1, 2)}">1.00</th:block></strong>
         </div>

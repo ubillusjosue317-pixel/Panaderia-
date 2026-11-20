@@ -4,14 +4,23 @@ import java.util.List;
 import java.util.Map;
 
 import com.utp.panaderia.model.EstadoPedido;
+import com.utp.panaderia.model.MetodoPago;
 import com.utp.panaderia.model.Pedido;
 import com.utp.panaderia.model.TipoEntrega;
 
 public interface PedidoService {
 
-    Pedido registrarPedido(Integer idUsuario, Map<Integer, Integer> items, TipoEntrega tipoEntrega, String direccion);
+    // El metodo de pago es obligatorio solo en delivery; en recojo en tienda se ignora
+    Pedido registrarPedido(Integer idUsuario, Map<Integer, Integer> items, TipoEntrega tipoEntrega,
+                           String direccion, MetodoPago metodoPago);
 
     List<Pedido> listarPorUsuario(Integer idUsuario);
+
+    // El cliente solo puede cancelar su propio pedido mientras siga Pendiente
+    Pedido cancelarPropio(Integer idUsuario, Integer idPedido);
+
+    // Productos y cantidades de un pedido del propio cliente (para volver a pedir)
+    Map<Integer, Integer> itemsDePedidoPropio(Integer idUsuario, Integer idPedido);
 
     // ---------- administrador ----------
 

@@ -38,6 +38,16 @@ public class Carrito implements Serializable {
         return true;
     }
 
+    // Agrega hasta "cantidad" unidades sin pasar del maximo; devuelve cuantas se agregaron
+    public int agregar(Integer idProducto, int cantidad) {
+        int actual = items.getOrDefault(idProducto, 0);
+        int agregadas = Math.max(0, Math.min(cantidad, MAXIMO_POR_PRODUCTO - actual));
+        if (agregadas > 0) {
+            items.put(idProducto, actual + agregadas);
+        }
+        return agregadas;
+    }
+
     public void quitar(Integer idProducto) {
         Integer cantidad = items.get(idProducto);
         if (cantidad == null) {
