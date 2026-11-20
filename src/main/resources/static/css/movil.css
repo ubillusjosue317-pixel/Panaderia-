@@ -420,12 +420,13 @@
     }
 
     .salir-movil button {
+        width: 100%;
         border: 1px solid var(--borde);
         background-color: #fff;
         color: var(--vino);
-        border-radius: 20px;
-        padding: 8px 18px;
-        font-size: 12px;
+        border-radius: 14px;
+        padding: 13px 18px;
+        font-size: 14px;
         font-weight: 600;
     }
 

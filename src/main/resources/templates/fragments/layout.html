@@ -104,6 +104,9 @@
         <i class="bi" th:classappend="${activa == 'admin-mensajes'} ? 'bi-chat-dots-fill' : 'bi-chat-dots'"></i>Mensajes
         <span class="contador-movil" th:if="${mensajesPendientes > 0}" th:text="${mensajesPendientes}">0</span>
     </a>
+    <a th:href="@{/perfil}" th:classappend="${activa == 'perfil'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'perfil'} ? 'bi-person-fill' : 'bi-person'"></i>Perfil
+    </a>
 </nav>
 
 <nav class="nav-inferior solo-movil" aria-label="Navegación" sec:authorize="!hasRole('ADMINISTRADOR')">
@@ -123,9 +126,10 @@
     <a sec:authorize="isAnonymous()" th:href="@{/login}">
         <i class="bi bi-person"></i>Cuenta
     </a>
-    <a sec:authorize="isAuthenticated()" th:href="@{/mis-pedidos}"
-       th:classappend="${activa == 'historial'} ? 'activo'">
-        <i class="bi" th:classappend="${activa == 'historial'} ? 'bi-person-fill' : 'bi-person'"></i>Cuenta
+    <!-- con sesion: Perfil (ahi estan Mis pedidos, Mensajes y Cerrar sesion) -->
+    <a sec:authorize="isAuthenticated()" th:href="@{/perfil}"
+       th:classappend="${activa == 'perfil'} ? 'activo'">
+        <i class="bi" th:classappend="${activa == 'perfil'} ? 'bi-person-fill' : 'bi-person'"></i>Perfil
     </a>
 </nav>
 </th:block>

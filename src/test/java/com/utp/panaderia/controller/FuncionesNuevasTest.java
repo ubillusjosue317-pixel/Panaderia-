@@ -308,4 +308,38 @@ class FuncionesNuevasTest {
         mvc.perform(get("/mis-pedidos").with(user(beto)))
                 .andExpect(content().string(not(containsString("Subir comprobante"))));
     }
+
+    // ================= Perfil como seccion de la barra inferior =================
+
+    @Test
+    void cerrarSesionSoloEstaEnLaSeccionPerfilYLaBarraTienePerfil() throws Exception {
+        // el boton flotante ya no aparece al final de las otras paginas
+        mvc.perform(get("/mis-pedidos").with(user(ana)))
+                .andExpect(content().string(not(containsString("salir-movil"))));
+        mvc.perform(get("/mensajes").with(user(ana)))
+                .andExpect(content().string(not(containsString("salir-movil"))));
+        // en el perfil si, junto a los accesos de la cuenta
+        mvc.perform(get("/perfil").with(user(ana)))
+                .andExpect(content().string(containsString("salir-movil")))
+                .andExpect(content().string(containsString("/mis-pedidos")))
+                .andExpect(content().string(containsString("/mensajes")))
+                .andExpect(content().string(containsString("/cambiar-clave")));
+        // la barra de abajo trae la pestaña Perfil
+        mvc.perform(get("/mis-pedidos").with(user(ana)))
+                .andExpect(content().string(containsString("href=\"/perfil\"")));
+    }
+
+    @Test
+    void elAdministradorTambienTienePerfilYSinBotonFlotante() throws Exception {
+        Usuario admin = usuarioRepository.findByEmail("admin@pieroalonso.pe").orElseThrow();
+        UsuarioAutenticado adm = new UsuarioAutenticado(admin, false);
+        mvc.perform(get("/admin/productos").with(user(adm)))
+                .andExpect(content().string(not(containsString("salir-movil"))))
+                .andExpect(content().string(containsString("href=\"/perfil\"")));
+        mvc.perform(get("/perfil").with(user(adm)))
+                .andExpect(content().string(containsString("salir-movil")))
+                .andExpect(content().string(containsString("/cambiar-clave")))
+                // el administrador no compra: no ve Mis pedidos ni Mensajes de cliente
+                .andExpect(content().string(not(containsString("href=\"/mis-pedidos\""))));
+    }
 }
